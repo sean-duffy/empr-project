@@ -51,47 +51,26 @@ void wave(double freq) {
     SysTick_Config((int) floor(freq));
 }
 
+double get_freq(int key_n){
+    // Converts piano key to freq
+    float f = pow(2,(key_n - 49)/(float) 12) * 440;
+    return (double) f;
+}
+
+
 int main(void) {
     init_dac();
     generate_sine(2);
+    int i;
+    double freq;
 
     while(1) {
-        wave(440);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
-        wave(494);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
-        wave(554);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
-        wave(587);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
-        wave(659);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
-        wave(740);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
-        wave(830);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
-        wave(831);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
-        wave(880);
-        while (duration_passed != 10000);
-        duration_passed = 0;
-
+        for (i = 40; i < 88; i++) {
+            freq = get_freq(i);
+            wave(freq);
+            while (duration_passed != 5000);
+            duration_passed = 0;
+        }
     }
 
     return 0;
