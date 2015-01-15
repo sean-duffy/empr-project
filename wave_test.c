@@ -7,7 +7,7 @@ int main(void) {
     int resolution = 360;
 
     wave_buf = (int *) calloc (resolution, sizeof(int));
-    generate_sine(wave_buf, 1);
+    generate_sawtooth(wave_buf, 2);
 
     for (int i = 0; i < resolution; i++) {
         printf("%d\n", wave_buf[i]);

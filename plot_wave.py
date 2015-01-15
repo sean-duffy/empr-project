@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 values = []
 for line in sys.stdin:
     try:
-        values.append(float(line) / 309.1 - 1)
+        values.append(float(line) - 300)
     except:
         pass
 

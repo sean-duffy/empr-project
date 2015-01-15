@@ -17,9 +17,9 @@ void generate_square(int *buf, double amplitude) {
     int i;
     for(i = 0; i < resolution; i++) {
         if (i < (resolution / 2)) {
-            buf[i] = 1;
+            buf[i] = amplitude;
         } else {
-            buf[i] = -1;
+            buf[i] = -1 * amplitude;
         }
     }
 }
