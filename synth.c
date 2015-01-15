@@ -6,9 +6,10 @@
 #include "lpc17xx_uart.h"
 #include "lpc17xx_dac.h"
 #include "LPC17xx.h"
+#include "sound_modules.h"
 
 int current_tick = 0;
-int sine_buff[360];
+int *wave_buff;
 int duration_passed = 0;
 
 void SysTick_Handler(void) {
@@ -36,31 +37,22 @@ void init_dac(void) {
     DAC_Init (LPC_DAC);
 }
 
-void generate_sine(double amplitude) {
-    amplitude = amplitude * 309.1;
-    int res = 360;
-
-    int i;
-    for(i = 0; i < 360; i++) {
-        sine_buff[i] = (int) floor((amplitude * sin((2*M_PI/res)*i) + amplitude) / 2);
-    }
-}
-
 void wave(double freq) {
     freq = 1/freq * 1389000;
     SysTick_Config((int) floor(freq));
 }
 
 double get_freq(int key_n){
-    // Converts piano key to freq
-    float f = pow(2,(key_n - 49)/(float) 12) * 440;
+    // Convert piano key number to frequency
+    float f = pow(2, (key_n - 49)/ (float) 12) * 440;
     return (double) f;
 }
 
 
 int main(void) {
     init_dac();
-    generate_sine(2);
+    wave_buf = (int *) calloc (resolution, sizeof(int));
+    generate_sine(wave_buff, 2);
     int i;
     double freq;
 
