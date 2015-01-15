@@ -36,8 +36,7 @@ void init_dac(void) {
     DAC_Init (LPC_DAC);
 }
 
-void wave(double freq, double amplitude) {
-    freq = 1/freq * 1389000;
+void generate_sine(double amplitude) {
     amplitude = amplitude * 309.1;
     int res = 360;
 
@@ -45,47 +44,51 @@ void wave(double freq, double amplitude) {
     for(i = 0; i < 360; i++) {
         sine_buff[i] = (int) floor((amplitude * sin((2*M_PI/res)*i) + amplitude) / 2);
     }
+}
 
+void wave(double freq) {
+    freq = 1/freq * 1389000;
     SysTick_Config((int) floor(freq));
 }
 
 int main(void) {
     init_dac();
+    generate_sine(2);
 
     while(1) {
-        wave(440, 2);
+        wave(440);
         while (duration_passed != 10000);
         duration_passed = 0;
 
-        wave(494, 2);
+        wave(494);
         while (duration_passed != 10000);
         duration_passed = 0;
 
-        wave(554, 2);
+        wave(554);
         while (duration_passed != 10000);
         duration_passed = 0;
 
-        wave(587, 2);
+        wave(587);
         while (duration_passed != 10000);
         duration_passed = 0;
 
-        wave(659, 2);
+        wave(659);
         while (duration_passed != 10000);
         duration_passed = 0;
 
-        wave(740, 2);
+        wave(740);
         while (duration_passed != 10000);
         duration_passed = 0;
 
-        wave(830, 2);
+        wave(830);
         while (duration_passed != 10000);
         duration_passed = 0;
 
-        wave(831, 2);
+        wave(831);
         while (duration_passed != 10000);
         duration_passed = 0;
 
-        wave(880, 2);
+        wave(880);
         while (duration_passed != 10000);
         duration_passed = 0;
 
