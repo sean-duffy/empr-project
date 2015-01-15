@@ -1,33 +1,21 @@
 #include "can.h"
 
 void CAN_IRQHandler(void)
- {
-         uint8_t IntStatus;
-         //check FullCAN interrupt enable or not
-         if(CAN_FullCANIntGetStatus(LPC_CANAF)== SET)
-         {       //check is FullCAN interrupt occurs or not
-                 if ((CAN_FullCANPendGetStatus(LPC_CANAF,FULLCAN_IC0))
-                                 ||(CAN_FullCANPendGetStatus(LPC_CANAF,FULLCAN_IC1)))
-                 {
-                         //read received FullCAN Object in Object Section
-                         FCAN_ReadObj(LPC_CANAF, &AFRxMsg[CANRxCount]);
-                         CANRxCount++;
-                 }
-         }
-         /* get interrupt status
-          * Note that: Interrupt register CANICR will be reset after read.
-          * So function "CAN_IntGetStatus" should be call only one time
-          */
-         IntStatus = CAN_IntGetStatus(LPC_CAN2);
-         //check receive interrupt
-         if((IntStatus>>0)&0x01)
-         {
-                 CAN_ReceiveMsg(LPC_CAN2, &AFRxMsg[CANRxCount]);
-                 CANRxCount++;
-         }
- }
+{
+        
+	IntStatus = CAN_IntGetStatus(LPC_CAN1);
+        //check receive interrupt (could be CAN2)
+        if((IntStatus>>0)&0x01)
+        {
+                //CAN_ReceiveMsg(LPC_CAN2, &AFRxMsg[CANRxCount]);
+                write_serial("Received\n", 9);
+        }
+}
 
 void main()
 {
-	init_can(LPC_CAN1)
+	serial_init();
+	init_can(LPC_CAN1);
+	void enable_interrupt(LPC_CAN1);
+	write_serial("loaded\n", 7);
 }
