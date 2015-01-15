@@ -1,0 +1,8 @@
+#ifndef CAN_H
+#define CAN_H
+
+void initCan(LPC_CAN_TypeDef* canInterface, uint32_t id, uint8_t baudRate);
+void setReceiveFilter(LPC_CAN_TypeDef* canInterface, unsigned int filter);
+void enableInterrupt(LPC_CAN_TypeDef* canInterface);
+
+#endif
