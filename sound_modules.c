@@ -44,10 +44,10 @@ void generate_triangle(int *buf, double amplitude){
 
     int i;
     for(i = 0; i < resolution; i++) {
-        if (i < (resolution / 2)) {
-            buf[i] = amplitude * (i / (resolution / 2.0)) + amplitude;
-        } else {
-            buf[i] = amplitude * (i / (resolution / 2.0)) - amplitude;
+        if (i < (resolution / 2)){
+            buf[i+resolution/4] = (i / (resolution/2.0)) * amplitude;
+        } else { 
+            buf[(i+resolution/4)%resolution] = amplitude - (((i - (resolution/2)) / (resolution/2.0))* amplitude);
         }
     }
 }
