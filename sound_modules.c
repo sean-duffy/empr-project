@@ -11,7 +11,7 @@ void generate_sine(int *buf, double amplitude) {
 }
 
 void generate_square(int *buf, double amplitude) {
-    amplitude = amplitude * 309.1;
+    amplitude = amplitude * 402;
     int resolution = 360;
 
     int i;
@@ -25,7 +25,7 @@ void generate_square(int *buf, double amplitude) {
 }
 
 void generate_sawtooth(int *buf, double amplitude) {
-    amplitude = amplitude * 309.1;
+    amplitude = amplitude * 155.0;
     int resolution = 360;
 
     int i;
