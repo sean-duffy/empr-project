@@ -54,7 +54,7 @@ double get_freq(int key_n){
 int main(void) {
     init_dac();
     wave_buf = (int *) calloc (resolution, sizeof(int));
-    generate_sine(wave_buf, 2);
+    generate_triangle(wave_buf, 2);
     int i;
     double freq;
 
