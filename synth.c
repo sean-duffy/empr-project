@@ -16,7 +16,7 @@ int current_tick = 0;
 int *wave_buf;
 int duration_passed = 0;
 int resolution = 360;
-uint32_t T1 = 500;
+uint32_t note_length = 500;
 
 void SysTick_Handler(void) {
     if (current_tick >= 360) {
@@ -31,7 +31,7 @@ void TIMER0_IRQHandler(void) {
     if (TIM_GetIntStatus(LPC_TIM0, TIM_MR0_INT) == SET) {
             TIM_Cmd(LPC_TIM0, DISABLE);
             TIM_ResetCounter(LPC_TIM0);
-            TIM_UpdateMatchValue(LPC_TIM0, 0, T1 * 10);//MAT0.0
+            TIM_UpdateMatchValue(LPC_TIM0, 0, note_length * 10);//MAT0.0
             TIM_Cmd(LPC_TIM0, ENABLE);
     }
     duration_passed++;
@@ -58,7 +58,6 @@ int init_timer(void) {
     TIM_TIMERCFG_Type TIM_ConfigStruct;
     TIM_MATCHCFG_Type TIM_MatchConfigStruct;
 
-    T1 = 500;
     // Configure P1.28 as MAT0.0
     PinCfg.Funcnum = 3;
     PinCfg.OpenDrain = 0;
@@ -77,7 +76,7 @@ int init_timer(void) {
     TIM_MatchConfigStruct.ResetOnMatch = FALSE;
     TIM_MatchConfigStruct.StopOnMatch = FALSE;
     TIM_MatchConfigStruct.ExtMatchOutputType = TIM_EXTMATCH_TOGGLE;
-    TIM_MatchConfigStruct.MatchValue = T1*10;
+    TIM_MatchConfigStruct.MatchValue = note_length*10;
     TIM_ConfigMatch(LPC_TIM0,&TIM_MatchConfigStruct);
     NVIC_SetPriority(TIMER0_IRQn, ((0x01<<3)|0x01));
     NVIC_EnableIRQ(TIMER0_IRQn);
@@ -87,19 +86,18 @@ int init_timer(void) {
     return 0;
 }
 
-void wave(double freq) {
+void note(double freq, double length) {
     freq = 1/freq * 1389000;
     SysTick_Config((int) floor(freq));
+    note_length = length;
+    while (duration_passed != 1);
+    duration_passed = 0;
 }
 
 double get_freq(int key_n){
     // Convert piano key number to frequency
     float f = pow(2, (key_n - 49)/ (float) 12) * 440;
     return (double) f;
-}
-
-void wait(double seconds) {
-
 }
 
 int main(void) {
@@ -113,9 +111,7 @@ int main(void) {
     while(1) {
         for (i = 40; i < 88; i++) {
             freq = get_freq(i);
-            wave(freq);
-            while (duration_passed != 1);
-            duration_passed = 0;
+            note(freq, 500);
         }
     }
 
