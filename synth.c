@@ -135,7 +135,7 @@ int main(void) {
     double freq;
     double arp[] = {40, 44, 47, 52, 47, 44};
 
-    while(1) {
+    while (1) {
         for (v = 0; v < 4; v++) {
             for (n = 0; n < 4; n++) {
                 for (i = 0; i < 6; i++) {
@@ -146,8 +146,27 @@ int main(void) {
         }
     }
 
+    double Cm[] = {40, 43, 47, 52, 55, 59, 64, 67, 71};
+    double Bb[] = {38, 42, 45, 50, 54, 57, 62, 66, 69};
+    double Fm[] = {33, 36, 40, 45, 48, 52, 57, 60, 64};
+
+    double *arps[] = {Cm, Bb, Fm, Cm, Bb, Fm, Cm, Cm};
+
+    while (1) {
+        for (n = 0; n < 8; n++) {
+            for (i = 0; i < 9; i++) {
+                freq = get_freq(arps[n][i]);
+                note(voice_sawtooth, freq, 125);
+            }
+            for (i = 8; i > 0; i--) {
+                freq = get_freq(arps[n][i]);
+                note(voice_sawtooth, freq, 125);
+            }
+        }
+    }
+
     //int range = 10;
-    //while(1) {
+    //while (1) {
     //    for (i = 0; i < range; i++) {
     //        freq = get_freq(50);
 
