@@ -86,9 +86,18 @@ int init_timer(void) {
     return 0;
 }
 
-void note(double freq, double length) {
+void note(int *voice, double freq, double length) {
+    wave_buf = voice;
+
     freq = 1/freq * 1389000;
     SysTick_Config((int) floor(freq));
+    note_length = length;
+    while (duration_passed != 1);
+    duration_passed = 0;
+}
+
+void rest(double length) {
+    SysTick_Config(0);
     note_length = length;
     while (duration_passed != 1);
     duration_passed = 0;
@@ -103,15 +112,18 @@ double get_freq(int key_n){
 int main(void) {
     init_dac();
     init_timer();
+
+    int voice_sine[resolution];
+    generate_square(voice_sine, 2);
     wave_buf = (int *) calloc (resolution, sizeof(int));
-    generate_square(wave_buf, 2);
+
     int i;
     double freq;
 
     while(1) {
         for (i = 40; i < 88; i++) {
             freq = get_freq(i);
-            note(freq, 500);
+            note(voice_sine, freq, 500);
         }
     }
 
