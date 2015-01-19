@@ -38,7 +38,7 @@ void generate_sawtooth(int *buf, double amplitude) {
     }
 }
 
-void generate_triangle(int *buf, double amplitude){
+void generate_triangle(int *buf, double amplitude) {
     amplitude = amplitude * 309.1;
     int resolution = 360;
 

@@ -113,20 +113,35 @@ int main(void) {
     init_dac();
     init_timer();
 
-    int voice_sine[resolution];
-    generate_square(voice_sine, 2);
     wave_buf = (int *) calloc (resolution, sizeof(int));
 
+    int voice_sine[resolution];
+    generate_square(voice_sine, 2);
+
+    int voice_square[resolution];
+    generate_square(voice_square, 2);
+
+    int voice_triangle[resolution];
+    generate_triangle(voice_triangle, 2);
+
+    int voice_sawtooth[resolution];
+    generate_sawtooth(voice_sawtooth, 2);
+
+    int *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
+
     int i;
+    int v;
     double freq;
     double arp[] = {40, 44, 47, 52, 47, 44, 40};
 
     while(1) {
-        for (i = 0; i < 7; i++) {
-            freq = get_freq(arp[i]);
-            note(voice_sine, freq, 500);
+        for (v = 0; v < 4; v++) {
+            for (i = 0; i < 7; i++) {
+                freq = get_freq(arp[i]);
+                note(voices[v], freq, 500);
+            }
+            rest(500);
         }
-        rest(500);
     }
 
     return 0;
