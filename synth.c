@@ -119,12 +119,14 @@ int main(void) {
 
     int i;
     double freq;
+    double arp[] = {40, 44, 47, 52, 47, 44, 40};
 
     while(1) {
-        for (i = 40; i < 88; i++) {
-            freq = get_freq(i);
+        for (i = 0; i < 7; i++) {
+            freq = get_freq(arp[i]);
             note(voice_sine, freq, 500);
         }
+        rest(500);
     }
 
     return 0;
