@@ -144,5 +144,12 @@ int main(void) {
         }
     }
 
+    while(1) {
+        for (i = 0; i < 10; i++) {
+            freq = get_freq(50);
+            note(voice_sawtooth, freq += i, 100);
+        }
+    }
+
     return 0;
 }
