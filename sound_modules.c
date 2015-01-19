@@ -1,7 +1,7 @@
 #include <math.h>
 
 void generate_sine(int *buf, double amplitude) {
-    amplitude = amplitude * 309.1;
+    amplitude = amplitude * 380;
     int resolution = 360;
 
     int i;
@@ -39,7 +39,7 @@ void generate_sawtooth(int *buf, double amplitude) {
 }
 
 void generate_triangle(int *buf, double amplitude) {
-    amplitude = amplitude * 309.1;
+    amplitude = amplitude * 380;
     int resolution = 360;
 
     int i;

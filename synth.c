@@ -116,7 +116,7 @@ int main(void) {
     wave_buf = (int *) calloc (resolution, sizeof(int));
 
     int voice_sine[resolution];
-    generate_square(voice_sine, 2);
+    generate_sine(voice_sine, 2);
 
     int voice_square[resolution];
     generate_square(voice_square, 2);
@@ -131,25 +131,35 @@ int main(void) {
 
     int i;
     int v;
+    int n;
     double freq;
-    double arp[] = {40, 44, 47, 52, 47, 44, 40};
+    double arp[] = {40, 44, 47, 52, 47, 44};
 
     while(1) {
         for (v = 0; v < 4; v++) {
-            for (i = 0; i < 7; i++) {
-                freq = get_freq(arp[i]);
-                note(voices[v], freq, 500);
+            for (n = 0; n < 4; n++) {
+                for (i = 0; i < 6; i++) {
+                    freq = get_freq(arp[i]);
+                    note(voices[v], freq, 125);
+                }
             }
-            rest(500);
         }
     }
 
-    while(1) {
-        for (i = 0; i < 10; i++) {
-            freq = get_freq(50);
-            note(voice_sawtooth, freq += i, 100);
-        }
-    }
+    //int range = 10;
+    //while(1) {
+    //    for (i = 0; i < range; i++) {
+    //        freq = get_freq(50);
+
+    //        if (i > (range/2)) {
+    //            freq += (range - i - (range/2));
+    //        } else {
+    //            freq += i;
+    //        }
+
+    //        note(voice_sawtooth, freq, 10);
+    //    }
+    //}
 
     return 0;
 }
