@@ -28,13 +28,13 @@ void enable_interrupt(LPC_CAN_TypeDef* can_interface)
 {
 	CAN_IRQCmd(can_interface, CANINT_FCE, ENABLE);  //fullcan interrupt (29bit identifiers)
 	CAN_IRQCmd(can_interface, CANINT_RIE, ENABLE);  //interrupt on receive message
-	NVIC_EnableIRQ(can_interface);
+	NVIC_EnableIRQ(CAN_IRQn);
 }
 void disable_interrupt(LPC_CAN_TypeDef* can_interface)
 {
 	CAN_IRQCmd(can_interface, CANINT_FCE, DISABLE);
 	CAN_IRQCmd(can_interface, CANINT_RIE, DISABLE);
-	NVIC_DisableIRQ(can_interface);
+	NVIC_DisableIRQ(CAN_IRQn);
 }
 
 void set_device_id(LPC_CAN_TypeDef* can_interface, uint32_t id)
@@ -56,14 +56,14 @@ void set_device_id(LPC_CAN_TypeDef* can_interface, uint32_t id)
 	AFTable.FC_NumEntry = 0;
 	AFTable.SFF_Sec = &SFF_Table[0];
 	AFTable.SFF_NumEntry = 0;
-	AFTable.SFF_GPR_Sec = &SFF_Table[0]//&SFF_GPR_Table[0]; //documentation says to do this when table is empty
+	AFTable.SFF_GPR_Sec = &SFF_Table[0];//&SFF_GPR_Table[0]; //documentation says to do this when table is empty
 	AFTable.SFF_GPR_NumEntry = 0;
 	AFTable.EFF_Sec = &EFF_Table[0];
 	AFTable.EFF_NumEntry = 1;
-	AFTable.EFF_GPR_Sec = &EFF_Table[0]//&EFF_GPR_Table[0];
+	AFTable.EFF_GPR_Sec = &EFF_Table[0];//&EFF_GPR_Table[0];
 	AFTable.EFF_GPR_NumEntry = 0;	
 	
-	CAN_SetAFMode(can_interface, CAN_AccOn);
+	CAN_SetAFMode(can_interface, CAN_eFCAN);
 }
 
 

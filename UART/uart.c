@@ -1,5 +1,5 @@
 #include "LPC17xx.h"		// Central include files
-#include "uartlib.h"
+#include "uart.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_uart.h"
 
