@@ -22,6 +22,10 @@ void main()
 	serial_init();
 	write_serial("booted\n", 7);
 	init_can(LPC_CAN1, 250000);
-	enable_interrupt(LPC_CAN1);
-	write_serial("loaded\n", 7);
+	//enable_interrupt(LPC_CAN1);
+	
+	while (1)
+	{
+		write_serial("loaded\n", 7);
+	}
 }
