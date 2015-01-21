@@ -5,12 +5,11 @@
 #include "can.h"
 #include "../UART/uart.h"
 
-//#define can_controller(n) (n == LPC_CAN2 ? CAN2_CTRL : CAN1_CTRL)
+#define can_controller(n) (n == LPC_CAN2 ? CAN2_CTRL : CAN1_CTRL)
 
 void init_can(LPC_CAN_TypeDef* can_interface, uint32_t baud_rate)
 {
 	PINSEL_CFG_Type PinCfg;
-	write_serial("start pins\n", 11);
 	PinCfg.Funcnum = PINSEL_FUNC_1;
 	PinCfg.OpenDrain = 0;
 	PinCfg.Pinmode = 0;
@@ -27,7 +26,6 @@ void init_can(LPC_CAN_TypeDef* can_interface, uint32_t baud_rate)
     PinCfg.Pinnum = 5;
     PINSEL_ConfigPin(&PinCfg);	
 	
-	write_serial("pins\n", 5);
 	
 	CAN_Init(can_interface, baud_rate);
 	//CAN_Init(LPC_CAN1, baud_rate);

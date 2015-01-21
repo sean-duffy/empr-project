@@ -22,10 +22,15 @@ void main()
 	serial_init();
 	write_serial("booted\n", 7);
 	init_can(LPC_CAN1, 250000);
-	//enable_interrupt(LPC_CAN1);
-	
-	while (1)
-	{
-		write_serial("loaded\n", 7);
-	}
+	enable_interrupt(LPC_CAN1);
+	write_serial("loaded\n", 7);
+	delay();
+	write_serial("filtered\n", 9);
+	set_device_id(LPC_CAN1, 1 << 11);
+}
+
+void delay()
+{
+	int i;
+	for (i = 0; i < 9000000; i++);
 }
