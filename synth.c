@@ -8,7 +8,7 @@
 #include "lpc17xx_dac.h"
 #include "LPC17xx.h"
 #include "lpc17xx_timer.h"
-#include "sound_modules.h"
+#include "oscillator.h"
 
 #define SECOND 1E9
 
@@ -17,6 +17,8 @@ int *wave_buf;
 int duration_passed = 0;
 int resolution = 360;
 uint32_t note_length = 500;
+
+int osc_1_value = 0;
 
 void SysTick_Handler(void) {
     if (current_tick >= 360) {
@@ -31,7 +33,6 @@ void TIMER0_IRQHandler(void) {
     if (TIM_GetIntStatus(LPC_TIM0, TIM_MR0_INT) == SET) {
             TIM_Cmd(LPC_TIM0, DISABLE);
             TIM_ResetCounter(LPC_TIM0);
-            TIM_UpdateMatchValue(LPC_TIM0, 0, note_length * 10);//MAT0.0
             TIM_Cmd(LPC_TIM0, ENABLE);
     }
     duration_passed++;
@@ -76,12 +77,18 @@ int init_timer(void) {
     TIM_MatchConfigStruct.ResetOnMatch = FALSE;
     TIM_MatchConfigStruct.StopOnMatch = FALSE;
     TIM_MatchConfigStruct.ExtMatchOutputType = TIM_EXTMATCH_TOGGLE;
-    TIM_MatchConfigStruct.MatchValue = note_length*10;
-    TIM_ConfigMatch(LPC_TIM0,&TIM_MatchConfigStruct);
+
+    TIM_MatchConfigStruct.MatchValue = note_length * 10;
+    TIM_ConfigMatch(LPC_TIM0, &TIM_MatchConfigStruct);
+
+    TIM_MatchConfigStruct.MatchValue = 500000 / osc_1_freq;
+    TIM_ConfigMatch(LPC_TIM1, &TIM_MatchConfigStruct);
+
     NVIC_SetPriority(TIMER0_IRQn, ((0x01<<3)|0x01));
     NVIC_EnableIRQ(TIMER0_IRQn);
 
     TIM_Cmd(LPC_TIM0,ENABLE);
+    TIM_Cmd(LPC_TIM1,ENABLE);
 
     return 0;
 }
