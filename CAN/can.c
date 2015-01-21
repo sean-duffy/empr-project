@@ -3,25 +3,37 @@
 #include "lpc17xx_can.h"
 
 #include "can.h"
+#include "../UART/uart.h"
 
-#define can_controller(n) (n == LPC_CAN2 ? CAN2_CTRL : CAN1_CTRL)
+//#define can_controller(n) (n == LPC_CAN2 ? CAN2_CTRL : CAN1_CTRL)
 
 void init_can(LPC_CAN_TypeDef* can_interface, uint32_t baud_rate)
 {
 	PINSEL_CFG_Type PinCfg;
-
-	PinCfg.Funcnum = 1;
+	write_serial("start pins\n", 11);
+	PinCfg.Funcnum = PINSEL_FUNC_1;
 	PinCfg.OpenDrain = 0;
 	PinCfg.Pinmode = 0;
 	PinCfg.Pinnum = 0;
 	PinCfg.Portnum = 0;
 	PINSEL_ConfigPin(&PinCfg);
 	PinCfg.Pinnum = 1;
-	PINSEL_ConfigPin(&PinCfg);	
+	PINSEL_ConfigPin(&PinCfg);		
 
-	CAN_Init(can_interface, baud_rate);
+	PinCfg.Funcnum = PINSEL_FUNC_2;
+	PinCfg.Pinnum = 4;
+    PinCfg.Portnum = 0;
+    PINSEL_ConfigPin(&PinCfg);
+    PinCfg.Pinnum = 5;
+    PINSEL_ConfigPin(&PinCfg);	
 	
-	CAN_SetAFMode(can_interface, CAN_AccBP); //accept all traffic on init
+	write_serial("pins\n", 5);
+	
+	CAN_Init(can_interface, baud_rate);
+	//CAN_Init(LPC_CAN1, baud_rate);
+	//CAN_Init(LPC_CAN2, baud_rate);
+	
+	//CAN_SetAFMode(can_interface, CAN_AccBP); //accept all traffic on init
 }
 
 void enable_interrupt(LPC_CAN_TypeDef* can_interface)
