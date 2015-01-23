@@ -34,7 +34,7 @@ LDFLAGS+=-L$(CMSIS)/lib -lDriversLPC17xxgnu
 
 EXECNAME	= bin/synth
 
-OBJ		= synth.o sound_modules.o
+OBJ		= synth.o oscillator.o
 
 all: 	synth
 	@echo "Build finished"

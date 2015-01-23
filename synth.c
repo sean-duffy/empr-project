@@ -8,6 +8,7 @@
 #include "lpc17xx_dac.h"
 #include "LPC17xx.h"
 #include "lpc17xx_timer.h"
+
 #include "oscillator.h"
 
 #define SECOND 1E9
@@ -21,11 +22,12 @@ uint32_t note_length = 500;
 int osc_1_value = 0;
 
 void SysTick_Handler(void) {
-    if (current_tick >= 360) {
+    if (current_tick >= resolution) {
         current_tick = 0;
     }
 
-    DAC_UpdateValue(LPC_DAC, (int) (wave_buf[current_tick] + 1) * 1024);
+    DAC_UpdateValue(LPC_DAC, (int) floor((wave_buf[current_tick] + 1.0) * 300));
+    //write_usb_serial_blocking(sprintf("%f\n", wave_buf[current_tick], int length);
     current_tick += 5;
 }
 
@@ -33,6 +35,7 @@ void TIMER0_IRQHandler(void) {
     if (TIM_GetIntStatus(LPC_TIM0, TIM_MR0_INT) == SET) {
             TIM_Cmd(LPC_TIM0, DISABLE);
             TIM_ResetCounter(LPC_TIM0);
+            TIM_UpdateMatchValue(LPC_TIM0, 0, note_length * 10);
             TIM_Cmd(LPC_TIM0, ENABLE);
     }
     duration_passed++;
@@ -119,16 +122,16 @@ int main(void) {
     wave_buf = (double *) calloc (resolution, sizeof(double));
 
     double voice_sine[resolution];
-    generate_sine(voice_sine, 2);
+    generate_sine(voice_sine, resolution);
 
     double voice_square[resolution];
-    generate_square(voice_square, 2);
+    generate_square(voice_square, resolution);
 
     double voice_triangle[resolution];
-    generate_triangle(voice_triangle, 2);
+    generate_triangle(voice_triangle, resolution);
 
     double voice_sawtooth[resolution];
-    generate_sawtooth(voice_sawtooth, 2);
+    generate_sawtooth(voice_sawtooth, resolution);
 
     double *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
 
@@ -161,27 +164,27 @@ int main(void) {
                 freq = get_freq(arps[n][i]);
                 note(voice_sawtooth, freq, 125);
             }
-            for (i = 8; i > 0; i--) {
+            for (i = 7; i > 0; i--) {
                 freq = get_freq(arps[n][i]);
                 note(voice_sawtooth, freq, 125);
             }
         }
     }
 
-    //int range = 10;
-    //while (1) {
-    //    for (i = 0; i < range; i++) {
-    //        freq = get_freq(50);
+    int range = 10;
+    while (1) {
+        for (i = 0; i < range; i++) {
+            freq = get_freq(50);
 
-    //        if (i > (range/2)) {
-    //            freq += (range - i - (range/2));
-    //        } else {
-    //            freq += i;
-    //        }
+            if (i > (range/2)) {
+                freq += (range - i - (range/2));
+            } else {
+                freq += i;
+            }
 
-    //        note(voice_sawtooth, freq, 10);
-    //    }
-    //}
+            note(voice_sawtooth, freq, 10);
+        }
+    }
 
     return 0;
 }
