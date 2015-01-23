@@ -19,19 +19,18 @@ void init_can(LPC_CAN_TypeDef* can_interface, uint32_t baud_rate)
 	PinCfg.Pinnum = 1;
 	PINSEL_ConfigPin(&PinCfg);		
 
-	PinCfg.Funcnum = PINSEL_FUNC_2;
-	PinCfg.Pinnum = 4;
-    PinCfg.Portnum = 0;
-    PINSEL_ConfigPin(&PinCfg);
-    PinCfg.Pinnum = 5;
-    PINSEL_ConfigPin(&PinCfg);	
+	PinCfg.Pinnum = 7;
+        PinCfg.Portnum = 2;
+        PINSEL_ConfigPin(&PinCfg);
+        PinCfg.Pinnum = 8;
+        PINSEL_ConfigPin(&PinCfg);	
 	
 	
 	CAN_Init(can_interface, baud_rate);
 	//CAN_Init(LPC_CAN1, baud_rate);
 	//CAN_Init(LPC_CAN2, baud_rate);
 	
-	//CAN_SetAFMode(can_interface, CAN_AccBP); //accept all traffic on init
+	CAN_SetAFMode(LPC_CANAF, CAN_AccBP); //accept all traffic on init
 }
 
 void enable_interrupt(LPC_CAN_TypeDef* can_interface)
