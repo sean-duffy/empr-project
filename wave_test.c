@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "sound_modules.h"
+#include "oscillator.h"
 
 int main(void) {
-    int *wave_buf;
+    double *wave_buf;
     int resolution = 360;
 
-    wave_buf = (int *) calloc (resolution, sizeof(int));
-    generate_sawtooth(wave_buf, 2);
+    wave_buf = (double *) calloc (resolution, sizeof(double));
+    generate_sawtooth(wave_buf, resolution);
 
     for (int i = 0; i < resolution; i++) {
-        printf("%d\n", wave_buf[i]);
+        printf("%f\n", wave_buf[i]);
     }
+
+    return 0;
 }
