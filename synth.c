@@ -13,7 +13,7 @@
 #define SECOND 1E9
 
 int current_tick = 0;
-int *wave_buf;
+double *wave_buf;
 int duration_passed = 0;
 int resolution = 360;
 uint32_t note_length = 500;
@@ -25,7 +25,7 @@ void SysTick_Handler(void) {
         current_tick = 0;
     }
 
-    DAC_UpdateValue(LPC_DAC, wave_buf[current_tick]);
+    DAC_UpdateValue(LPC_DAC, (int) (wave_buf[current_tick] + 1) * 1024);
     current_tick += 5;
 }
 
@@ -93,7 +93,7 @@ int init_timer(void) {
     return 0;
 }
 
-void note(int *voice, double freq, double length) {
+void note(double *voice, double freq, double length) {
     wave_buf = voice;
 
     freq = 1/freq * 1389000;
@@ -120,21 +120,21 @@ int main(void) {
     init_dac();
     init_timer();
 
-    wave_buf = (int *) calloc (resolution, sizeof(int));
+    wave_buf = (double *) calloc (resolution, sizeof(double));
 
-    int voice_sine[resolution];
+    double voice_sine[resolution];
     generate_sine(voice_sine, 2);
 
-    int voice_square[resolution];
+    double voice_square[resolution];
     generate_square(voice_square, 2);
 
-    int voice_triangle[resolution];
+    double voice_triangle[resolution];
     generate_triangle(voice_triangle, 2);
 
-    int voice_sawtooth[resolution];
+    double voice_sawtooth[resolution];
     generate_sawtooth(voice_sawtooth, 2);
 
-    int *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
+    double *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
 
     int i;
     int v;
