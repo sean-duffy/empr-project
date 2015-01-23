@@ -20,13 +20,39 @@ uint32_t note_length = 500;
 
 int osc_1_value = 0;
 
-void SysTick_Handler(void) {
-    if (current_tick >= 360) {
-        current_tick = 0;
-    }
+double osc_1;
+int osc_1_timer = 2000;
+int osc_1_tick = 0;
+double osc_1_point;
 
-    DAC_UpdateValue(LPC_DAC, (int) (wave_buf[current_tick] + 1) * 1024);
-    current_tick += 5;
+double osc_2;
+int osc_2_timer = 30;
+int osc_2_tick = 0;
+double osc_2_point;
+
+double wave_out;
+
+void SysTick_Handler(void) {
+    if(osc_1_tick > osc_1_timer)
+        osc_1_tick = 0;
+
+    if(osc_2_tick > osc_2_timer)
+        osc_2_tick = 0;
+
+    osc_1_point = (double) osc_1_tick/osc_1_timer;
+    osc_2_point = (double) osc_2_tick/osc_2_timer;
+    
+    osc_1 = (point_noise_white(osc_1_point,0) + 1)/2;
+    osc_2 = (point_sine(osc_2_point,0) + 1)/2;
+
+    wave_out = mult_points(osc_1, osc_2, 1, 1);
+    wave_out = mult_points(wave_out, osc_1,1,1);
+    wave_out = mult_points(wave_out, osc_1,1,1);
+    wave_out = add_points(wave_out, osc_1, 1,1);
+
+    DAC_UpdateValue(LPC_DAC, (int) (wave_out*500));
+    osc_1_tick++;
+    osc_2_tick++;
 }
 
 void TIMER0_IRQHandler(void) {
@@ -119,17 +145,20 @@ int main(void) {
     wave_buf = (double *) calloc (resolution, sizeof(double));
 
     double voice_sine[resolution];
-    generate_sine(voice_sine, 2);
+    generate_sine(voice_sine, 360);
 
     double voice_square[resolution];
-    generate_square(voice_square, 2);
+    generate_square(voice_square, 360);
 
     double voice_triangle[resolution];
-    generate_triangle(voice_triangle, 2);
+    generate_triangle(voice_triangle, 360);
 
     double voice_sawtooth[resolution];
-    generate_sawtooth(voice_sawtooth, 2);
+    generate_sawtooth(voice_sawtooth, 360);
+    
 
+    note(voice_sine, get_freq(60), 125);
+    /*
     double *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
 
     int i;
@@ -167,7 +196,7 @@ int main(void) {
             }
         }
     }
-
+    */
     //int range = 10;
     //while (1) {
     //    for (i = 0; i < range; i++) {
