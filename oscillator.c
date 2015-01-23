@@ -29,6 +29,28 @@ double point_triangle(double point, double offset) {
     }
 }
 
+// Noise functions
+
+double point_noise_white(){
+    int r = (rand() % 10000000);
+    r = 2 * r -10000000;
+    return (double) r/10000000;
+}
+
+double point_noise_pink(){
+    // Tricky, will implement when required
+    return 0;
+}
+
+// Operators
+double add_points(double p_a, double p_b, double scale_a, double scale_b){
+    return (p_a*scale_a + p_b*scale_b)/2;
+}
+
+double mult_points(double p_a, double p_b, double scale_a, double scale_b){
+    return (p_a*scale_a * p_b*scale_b);
+}
+
 // Buffer generators
 void generate_sine(double *buf, int res) {
     int i;
@@ -57,3 +79,12 @@ void generate_triangle(double *buf, int res) {
         buf[i] = point_triangle((double) i/res, 0);
     }
 }
+
+void generate_white_noise(double *buf, int res) {
+    int i;
+    for (i = 0; i < res; i++) {
+        buf[i] = point_noise_white();
+    }
+}   
+
+
