@@ -112,10 +112,10 @@ int init_timer(void) {
 }
 
 void note(wave_t osc_wave, double freq, double length) {
-
     osc_1_wave = osc_wave;
     osc_1_freq = freq;
 
+    note_length = length;
     while (duration_passed != 1);
     duration_passed = 0;
 }
