@@ -81,14 +81,10 @@ int init_timer(void) {
     TIM_MatchConfigStruct.MatchValue = note_length * 10;
     TIM_ConfigMatch(LPC_TIM0, &TIM_MatchConfigStruct);
 
-    TIM_MatchConfigStruct.MatchValue = 500000 / osc_1_freq;
-    TIM_ConfigMatch(LPC_TIM1, &TIM_MatchConfigStruct);
-
     NVIC_SetPriority(TIMER0_IRQn, ((0x01<<3)|0x01));
     NVIC_EnableIRQ(TIMER0_IRQn);
 
     TIM_Cmd(LPC_TIM0,ENABLE);
-    TIM_Cmd(LPC_TIM1,ENABLE);
 
     return 0;
 }
@@ -97,7 +93,7 @@ void note(double *voice, double freq, double length) {
     wave_buf = voice;
 
     freq = 1/freq * 1389000;
-    SysTick_Config((int) floor(freq));
+    SysTick_Config((int) floor(freq)); // 2400
     note_length = length;
     while (duration_passed != 1);
     duration_passed = 0;
