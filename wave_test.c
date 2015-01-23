@@ -7,7 +7,7 @@ int main(void) {
     int resolution = 360;
 
     wave_buf = (double *) calloc (resolution, sizeof(double));
-    generate_sine(wave_buf, resolution);
+    generate_square(wave_buf, resolution);
 
     for (int i = 0; i < resolution; i++) {
         printf("%f\n", wave_buf[i]);

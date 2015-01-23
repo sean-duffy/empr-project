@@ -5,6 +5,7 @@
 #include "lpc_types.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_uart.h"
+#include "lpc17xx_gpio.h"
 #include "lpc17xx_dac.h"
 #include "LPC17xx.h"
 #include "lpc17xx_timer.h"
@@ -16,19 +17,37 @@
 int current_tick = 0;
 double *wave_buf;
 int duration_passed = 0;
-int resolution = 360;
+int resolution = 100;
 uint32_t note_length = 500;
 
-int osc_1_value = 0;
+typedef enum {SINE, SQUARE, TRIANGLE, SAWTOOTH} wave_t;
+
+double osc_1_freq = 600;
+int osc_1_tick = 0;
+int osc_1_res;
+wave_t osc_1_wave = SINE;
 
 void SysTick_Handler(void) {
-    if (current_tick >= resolution) {
-        current_tick = 0;
+    double osc_1_value;
+
+    osc_1_res = 1 / osc_1_freq * 16600;
+    if (osc_1_tick >= osc_1_res) {
+        osc_1_tick = 0;
     }
 
-    DAC_UpdateValue(LPC_DAC, (int) floor((wave_buf[current_tick] + 1.0) * 300));
-    //write_usb_serial_blocking(sprintf("%f\n", wave_buf[current_tick], int length);
-    current_tick += 5;
+    if (osc_1_wave == SINE) {
+        osc_1_value = point_sine(1.0/osc_1_res * osc_1_tick, 0) + 1.0;
+    } else if (osc_1_wave == SQUARE) {
+        osc_1_value = point_square(1.0/osc_1_res * osc_1_tick, 0) + 1.0;
+    } else if (osc_1_wave == TRIANGLE) {
+        osc_1_value = point_triangle(1.0/osc_1_res * osc_1_tick, 0) + 1.0;
+    } else if (osc_1_wave == SAWTOOTH) {
+        osc_1_value = point_sawtooth(1.0/osc_1_res * osc_1_tick, 0) + 1.0;
+    }
+
+    DAC_UpdateValue(LPC_DAC, (int) floor(osc_1_value * 300));
+
+    osc_1_tick += 1;
 }
 
 void TIMER0_IRQHandler(void) {
@@ -92,61 +111,46 @@ int init_timer(void) {
     return 0;
 }
 
-void note(double *voice, double freq, double length) {
-    wave_buf = voice;
+void note(wave_t osc_wave, double freq, double length) {
 
-    freq = 1/freq * 1389000;
-    SysTick_Config((int) floor(freq)); // 2400
-    note_length = length;
+    osc_1_wave = osc_wave;
+    osc_1_freq = freq;
+
     while (duration_passed != 1);
     duration_passed = 0;
 }
 
 void rest(double length) {
-    SysTick_Config(0);
     note_length = length;
     while (duration_passed != 1);
     duration_passed = 0;
 }
 
-double get_freq(int key_n){
+double get_freq(int key_n) {
     // Convert piano key number to frequency
-    float f = pow(2, (key_n - 49)/ (float) 12) * 440;
-    return (double) f;
+    double f = pow(2, (key_n - 49)/ 12.0) * 440;
+    GPIO_SetValue(1, (1 << 18));
+    return f;
 }
 
 int main(void) {
+    GPIO_SetDir(1, (101101 << 18), 1);
     init_dac();
     init_timer();
-
-    wave_buf = (double *) calloc (resolution, sizeof(double));
-
-    double voice_sine[resolution];
-    generate_sine(voice_sine, resolution);
-
-    double voice_square[resolution];
-    generate_square(voice_square, resolution);
-
-    double voice_triangle[resolution];
-    generate_triangle(voice_triangle, resolution);
-
-    double voice_sawtooth[resolution];
-    generate_sawtooth(voice_sawtooth, resolution);
-
-    double *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
+    SysTick_Config(2275);
 
     int i;
     int v;
     int n;
     double freq;
-    double arp[] = {40, 44, 47, 52, 47, 44};
+    int arp[] = {40, 44, 47, 52, 47, 44};
 
     while (1) {
         for (v = 0; v < 4; v++) {
             for (n = 0; n < 4; n++) {
                 for (i = 0; i < 6; i++) {
                     freq = get_freq(arp[i]);
-                    note(voices[v], freq, 125);
+                    note(v, freq, 125);
                 }
             }
         }
@@ -158,18 +162,19 @@ int main(void) {
 
     double *arps[] = {Cm, Bb, Fm, Cm, Bb, Fm, Cm, Cm};
 
-    while (1) {
-        for (n = 0; n < 8; n++) {
-            for (i = 0; i < 9; i++) {
-                freq = get_freq(arps[n][i]);
-                note(voice_sawtooth, freq, 125);
-            }
-            for (i = 7; i > 0; i--) {
-                freq = get_freq(arps[n][i]);
-                note(voice_sawtooth, freq, 125);
-            }
-        }
-    }
+    //while (1) {
+    //    for (n = 0; n < 8; n++) {
+    //        for (i = 0; i < 9; i++) {
+    //            freq = get_freq(arps[n][i]);
+    //            
+    //            note(SAWTOOTH, freq, 125);
+    //        }
+    //        for (i = 7; i > 0; i--) {
+    //            freq = get_freq(arps[n][i]);
+    //            note(SAWTOOTH, freq, 125);
+    //        }
+    //    }
+    //}
 
     int range = 10;
     while (1) {
@@ -182,7 +187,7 @@ int main(void) {
                 freq += i;
             }
 
-            note(voice_sawtooth, freq, 10);
+            note(SAWTOOTH, freq, 10);
         }
     }
 
