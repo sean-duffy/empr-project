@@ -7,9 +7,10 @@ int main(void) {
     int resolution = 360;
 
     wave_buf = (double *) calloc (resolution, sizeof(double));
-    generate_sawtooth(wave_buf, resolution);
+    generate_white_noise(wave_buf, resolution);
 
-    for (int i = 0; i < resolution; i++) {
+    int i;
+    for (i = 0; i < resolution; i++) {
         printf("%f\n", wave_buf[i]);
     }
 
