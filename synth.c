@@ -11,27 +11,23 @@
 
 #include "oscillator.h"
 
-#define SECOND 1E9
 #define SAMPLE_RATE 20800
 
-double current_tick = 0;
-double *wave_buf;
 int duration_passed = 0;
 int resolution = 360;
 uint32_t note_length = 500;
 
-int osc_1_value = 0;
 double osc_1_inc = 30;
-
-int b = 0;
+double osc_1_tick = 0;
+double *osc_1_buf;
 
 void SysTick_Handler(void) {
-    if (current_tick >= resolution) {
-        current_tick = 0;
+    if (osc_1_tick >= resolution) {
+        osc_1_tick = 0;
     }
 
-    DAC_UpdateValue(LPC_DAC, (int) floor((wave_buf[(int) floor(current_tick)] + 1.0) * 300));
-    current_tick += osc_1_inc;
+    DAC_UpdateValue(LPC_DAC, (int) floor((osc_1_buf[(int) floor(osc_1_tick)] + 1.0) * 300));
+    osc_1_tick += osc_1_inc;
 }
 
 void TIMER0_IRQHandler(void) {
@@ -96,10 +92,9 @@ int init_timer(void) {
 }
 
 void note(double *voice, double freq, double length) {
-    wave_buf = voice;
+    osc_1_buf = voice;
 
     osc_1_inc = 0.00858141 * freq;
-    current_tick = 0;
 
     SysTick_Config(2400);
     note_length = length;
@@ -124,7 +119,7 @@ int main(void) {
     init_dac();
     init_timer();
 
-    wave_buf = (double *) calloc (resolution, sizeof(double));
+    osc_1_buf = (double *) calloc (resolution, sizeof(double));
 
     double voice_sine[resolution];
     generate_sine(voice_sine, resolution);
@@ -140,26 +135,22 @@ int main(void) {
 
     double *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
 
-    while (1) {
-        note(voice_sawtooth, 440, 250);
-    }
-
     int i;
     int v;
     int n;
     double freq;
     double arp[] = {40, 44, 47, 52, 47, 44};
 
-    while (1) {
-        for (v = 0; v < 4; v++) {
-            for (n = 0; n < 4; n++) {
-                for (i = 0; i < 6; i++) {
-                    freq = get_freq(arp[i]);
-                    note(voices[v], freq, 125);
-                }
-            }
-        }
-    }
+    //while (1) {
+    //    for (v = 0; v < 4; v++) {
+    //        for (n = 0; n < 4; n++) {
+    //            for (i = 0; i < 6; i++) {
+    //                freq = get_freq(arp[i]);
+    //                note(voices[v], freq, 125);
+    //            }
+    //        }
+    //    }
+    //}
 
     double Cm[] = {40, 43, 47, 52, 55, 59, 64, 67, 71};
     double Bb[] = {38, 42, 45, 50, 54, 57, 62, 66, 69};
