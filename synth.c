@@ -12,23 +12,26 @@
 #include "oscillator.h"
 
 #define SECOND 1E9
+#define SAMPLE_RATE 20800
 
-int current_tick = 0;
+double current_tick = 0;
 double *wave_buf;
 int duration_passed = 0;
 int resolution = 360;
 uint32_t note_length = 500;
 
 int osc_1_value = 0;
+double osc_1_inc = 30;
+
+int b = 0;
 
 void SysTick_Handler(void) {
     if (current_tick >= resolution) {
         current_tick = 0;
     }
 
-    DAC_UpdateValue(LPC_DAC, (int) floor((wave_buf[current_tick] + 1.0) * 300));
-    //write_usb_serial_blocking(sprintf("%f\n", wave_buf[current_tick], int length);
-    current_tick += 5;
+    DAC_UpdateValue(LPC_DAC, (int) floor((wave_buf[(int) floor(current_tick)] + 1.0) * 300));
+    current_tick += osc_1_inc;
 }
 
 void TIMER0_IRQHandler(void) {
@@ -95,8 +98,10 @@ int init_timer(void) {
 void note(double *voice, double freq, double length) {
     wave_buf = voice;
 
-    freq = 1/freq * 1389000;
-    SysTick_Config((int) floor(freq)); // 2400
+    osc_1_inc = 0.00858141 * freq;
+    current_tick = 0;
+
+    SysTick_Config(2400);
     note_length = length;
     while (duration_passed != 1);
     duration_passed = 0;
@@ -134,6 +139,10 @@ int main(void) {
     generate_sawtooth(voice_sawtooth, resolution);
 
     double *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
+
+    while (1) {
+        note(voice_sawtooth, 440, 250);
+    }
 
     int i;
     int v;
