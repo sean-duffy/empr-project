@@ -195,7 +195,7 @@ int c_entry(void) { /* Main Program */
 	 */
 	//CAN_Init(LPC_CAN1, 250000);
 
-	//Enable self-test mode
+	//Enable self-test modeDiscuss CAN-Bus not working
 	CAN_ModeConfig(LPC_CAN1, CAN_OPERATING_MODE, ENABLE);
 
 	//Enable Interrupt
