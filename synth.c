@@ -20,14 +20,39 @@ uint32_t note_length = 500;
 double osc_1_inc = 30;
 double osc_1_tick = 0;
 double *osc_1_buf;
+double osc_1_value;
+
+double osc_2_inc = 30;
+double osc_2_tick = 0;
+double *osc_2_buf;
+double osc_2_value;
+
+double osc_3_inc = 30;
+double osc_3_tick = 0;
+double *osc_3_buf;
+double osc_3_value;
 
 void SysTick_Handler(void) {
     if (osc_1_tick >= resolution) {
         osc_1_tick = 0;
     }
 
-    DAC_UpdateValue(LPC_DAC, (int) floor((osc_1_buf[(int) floor(osc_1_tick)] + 1.0) * 300));
+    if (osc_2_tick >= resolution) {
+        osc_2_tick = 0;
+    }
+
+    if (osc_3_tick >= resolution) {
+        osc_3_tick = 0;
+    }
+
+    osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
+    osc_2_value = osc_2_buf[(int) floor(osc_2_tick)];
+    osc_3_value = osc_3_buf[(int) floor(osc_3_tick)];
+
+    DAC_UpdateValue(LPC_DAC, (int) floor((((osc_1_value + osc_2_value + osc_3_value) / 3) + 1.0) * 300));
     osc_1_tick += osc_1_inc;
+    osc_2_tick += osc_2_inc;
+    osc_3_tick += osc_3_inc;
 }
 
 void TIMER0_IRQHandler(void) {
@@ -92,9 +117,9 @@ int init_timer(void) {
 }
 
 void note(double *voice, double freq, double length) {
-    osc_1_buf = voice;
-
-    osc_1_inc = 0.00858141 * freq;
+    osc_1_inc = 0.00858141 * 262;
+    osc_2_inc = 0.00858141 * 330;
+    osc_3_inc = 0.00858141 * 392;
 
     SysTick_Config(2400);
     note_length = length;
@@ -135,22 +160,30 @@ int main(void) {
 
     double *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
 
+    osc_1_buf = voice_sine;
+    osc_2_buf = voice_sawtooth;
+    osc_3_buf = voice_square;
+
+    while (1) {
+        note(voice_square, 262, 250);
+    }
+
     int i;
     int v;
     int n;
     double freq;
     double arp[] = {40, 44, 47, 52, 47, 44};
 
-    //while (1) {
-    //    for (v = 0; v < 4; v++) {
-    //        for (n = 0; n < 4; n++) {
-    //            for (i = 0; i < 6; i++) {
-    //                freq = get_freq(arp[i]);
-    //                note(voices[v], freq, 125);
-    //            }
-    //        }
-    //    }
-    //}
+    while (1) {
+        for (v = 0; v < 4; v++) {
+            for (n = 0; n < 4; n++) {
+                for (i = 0; i < 6; i++) {
+                    freq = get_freq(arp[i]);
+                    note(voices[v], freq, 125);
+                }
+            }
+        }
+    }
 
     double Cm[] = {40, 43, 47, 52, 55, 59, 64, 67, 71};
     double Bb[] = {38, 42, 45, 50, 54, 57, 62, 66, 69};
@@ -158,33 +191,33 @@ int main(void) {
 
     double *arps[] = {Cm, Bb, Fm, Cm, Bb, Fm, Cm, Cm};
 
-    while (1) {
-        for (n = 0; n < 8; n++) {
-            for (i = 0; i < 9; i++) {
-                freq = get_freq(arps[n][i]);
-                note(voice_sawtooth, freq, 125);
-            }
-            for (i = 7; i > 0; i--) {
-                freq = get_freq(arps[n][i]);
-                note(voice_sawtooth, freq, 125);
-            }
-        }
-    }
+    //while (1) {
+    //    for (n = 0; n < 8; n++) {
+    //        for (i = 0; i < 9; i++) {
+    //            freq = get_freq(arps[n][i]);
+    //            note(voice_sawtooth, freq, 125);
+    //        }
+    //        for (i = 7; i > 0; i--) {
+    //            freq = get_freq(arps[n][i]);
+    //            note(voice_sawtooth, freq, 125);
+    //        }
+    //    }
+    //}
 
-    int range = 10;
-    while (1) {
-        for (i = 0; i < range; i++) {
-            freq = get_freq(50);
+    //int range = 10;
+    //while (1) {
+    //    for (i = 0; i < range; i++) {
+    //        freq = get_freq(50);
 
-            if (i > (range/2)) {
-                freq += (range - i - (range/2));
-            } else {
-                freq += i;
-            }
+    //        if (i > (range/2)) {
+    //            freq += (range - i - (range/2));
+    //        } else {
+    //            freq += i;
+    //        }
 
-            note(voice_sawtooth, freq, 10);
-        }
-    }
+    //        note(voice_sawtooth, freq, 10);
+    //    }
+    //}
 
     return 0;
 }
