@@ -383,7 +383,7 @@
          //Enable CAN Interrupt
          NVIC_EnableIRQ(CAN_IRQn);
 
-	CAN_SetAFMode(LPC_CANAF, CAN_AccBP);
+    CAN_SetAFMode(LPC_CANAF, CAN_AccBP);
  
          /* First, we send 10 messages:
           * - message 0,2,4,6,8 have id in AFLUT >>> will be received
