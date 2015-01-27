@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 
 // Wave functions
 double point_sine(double point, double offset) {
