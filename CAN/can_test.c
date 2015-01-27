@@ -70,11 +70,7 @@ void main()
 
 	CAN_SetAFMode(LPC_CANAF, CAN_AccBP);
 
-	//enable_interrupt(LPC_CAN2);
 	write_serial("loaded\n", 7);
-	//delay();
-	//write_serial("filtered\n", 9);
-	//set_device_id(LPC_CAN1, 1 << 11);
 	int i = 0, j = 0;
 	char outVal[30];
 	
