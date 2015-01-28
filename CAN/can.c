@@ -5,14 +5,13 @@
 #include "can.h"
 #include "../UART/uart.h"
 
-#define can_controller(n) (n == LPC_CAN2 ? CAN2_CTRL : CAN1_CTRL)
 #define debug_print(n, x) if(debug_flag) { write_serial(n, x); write_serial("\n\r", 2); }
 
 CAN_MSG_Type received_message;
 
 short unsigned int debug;
 
-void CAN_IRQHandler(void) {
+void CAN_IRQHandler() {
     debug_print("CAN Interrupt Fired", 19);
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
     if ((IntStatus>>0)&0x01) {
@@ -30,7 +29,7 @@ void CAN_IRQHandler(void) {
     }
 }
 
-void init_can(LPC_CAN_TypeDef* can_interface, uint32_t baud_rate, short unsigned int debug_flag = 0) {
+void init_can(uint32_t baud_rate, short unsigned int debug_flag = 0) {
     debug = debug_flag;
     debug_print("Initialising CAN module", 23);
 
@@ -49,7 +48,7 @@ void init_can(LPC_CAN_TypeDef* can_interface, uint32_t baud_rate, short unsigned
     PINSEL_ConfigPin(&PinCfg);            
     
     
-    CAN_Init(can_interface, baud_rate);
+    CAN_Init(LPC_CAN2, baud_rate);
 
     CAN_init_message();
     
@@ -66,21 +65,21 @@ void CAN_init_message(void) {
     received_message.dataB[0] = received_message.dataA[1] = received_message.dataA[2] = received_message.dataA[3] = 0x00000000;
 }
 
-void enable_interrupt(LPC_CAN_TypeDef* can_interface) {
-    //CAN_IRQCmd(can_interface, CANINT_FCE, ENABLE);  //fullcan interrupt (29bit identifiers)
-    CAN_IRQCmd(can_interface, CANINT_RIE, ENABLE);  //interrupt on receive message
+void enable_interrupt() {
+    //CAN_IRQCmd(LPC_CAN2, CANINT_FCE, ENABLE);  //fullcan interrupt (29bit identifiers)
+    CAN_IRQCmd(LPC_CAN2, CANINT_RIE, ENABLE);  //interrupt on receive message
     NVIC_EnableIRQ(CAN_IRQn);
     debug_print("CAN interrupts enabled", 22);
 }
 
-void disable_interrupt(LPC_CAN_TypeDef* can_interface) {
-    //CAN_IRQCmd(can_interface, CANINT_FCE, DISABLE);
-    CAN_IRQCmd(can_interface, CANINT_RIE, DISABLE);
+void disable_interrupt() {
+    //CAN_IRQCmd(LPC_CAN2, CANINT_FCE, DISABLE);
+    CAN_IRQCmd(LPC_CAN2, CANINT_RIE, DISABLE);
     NVIC_DisableIRQ(CAN_IRQn);
     debug_print("CAN interrupts disabled", 23);
 }
 
-void set_device_id(LPC_CAN_TypeDef* can_interface, uint32_t id) {
+void set_device_id(uint32_t id) {
     AF_SectionDef AFTable;
     FullCAN_Entry FullCAN_Table [1];
     SFF_Entry SFF_Table [1];
@@ -88,9 +87,9 @@ void set_device_id(LPC_CAN_TypeDef* can_interface, uint32_t id) {
     EFF_Entry EFF_Table [1];
     EFF_GPR_Entry EFF_GPR_Table [1];
     
-    CAN_SetAFMode(can_interface, CAN_AccOff); //turn off filter for setting, accept no messages
+    CAN_SetAFMode(LPC_CAN2, CAN_AccOff); //turn off filter for setting, accept no messages
     
-    EFF_Table[0].controller = can_controller(can_interface);
+    EFF_Table[0].controller = CAN2_CTRL;
     EFF_Table[0].ID_29 = id;
     
     //set all the start registers to the address of the start of their respective tables, and set how many entries each has
@@ -105,6 +104,6 @@ void set_device_id(LPC_CAN_TypeDef* can_interface, uint32_t id) {
     AFTable.EFF_GPR_Sec = &EFF_Table[0];//&EFF_GPR_Table[0];
     AFTable.EFF_GPR_NumEntry = 0;    
     
-    CAN_SetAFMode(can_interface, CAN_eFCAN);
+    CAN_SetAFMode(LPC_CAN2, CAN_eFCAN);
     debug_print("Set CAN Acceptance Filter", 25);
 }
