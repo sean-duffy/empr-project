@@ -25,7 +25,7 @@ void CAN_IRQHandler() {
 
         recValLength = sprintf(toPrint, "Value: %x\r\n", recVal);
 
-        print_debug(toPrint, recValLength);
+        debug_print(toPrint, recValLength);
     }
 }
 
