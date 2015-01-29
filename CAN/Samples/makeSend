@@ -34,7 +34,7 @@ LDFLAGS+=-L$(CMSIS)/lib -lDriversLPC17xxgnu
 
 EXECNAME	= bin/can_send
 
-OBJ		= can_send.o can.o ../UART/uart.o
+OBJ		= can_send.o ../can.o ../../UART/uart.o
 
 all: 	can_send
 	@echo "Build finished"

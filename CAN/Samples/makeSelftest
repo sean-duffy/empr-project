@@ -34,7 +34,7 @@ LDFLAGS+=-L$(CMSIS)/lib -lDriversLPC17xxgnu
 
 EXECNAME	= bin/can_selftest
 
-OBJ		= can_selftest.o can.o ../UART/uart.o
+OBJ		= can_selftest.o ../can.o ../../UART/uart.o
 
 all: 	can_selftest
 	@echo "Build finished"

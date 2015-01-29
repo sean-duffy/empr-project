@@ -3,8 +3,8 @@
 #include "lpc17xx_can.h"
 
 
-#include "can.h"
-#include "../UART/uart.h"
+#include "../can.h"
+#include "../../UART/uart.h"
 
 CAN_MSG_Type RXMsg;
 
