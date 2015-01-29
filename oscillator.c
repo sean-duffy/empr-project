@@ -61,7 +61,6 @@ void generate_triangle(double *buf, int res) {
 void low_pass_filter(double *buf, int buflen, int n) {
     int i;
     int j;
-    int index;
     double new_value;
     for (i = 0; i < buflen; i++) {
         if (i >= (n - 1)) {

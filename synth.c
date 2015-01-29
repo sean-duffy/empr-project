@@ -5,7 +5,6 @@
 #include "lpc_types.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_uart.h"
-#include "lpc17xx_gpio.h"
 #include "lpc17xx_dac.h"
 #include "LPC17xx.h"
 #include "lpc17xx_timer.h"
@@ -15,7 +14,7 @@
 #define SAMPLE_RATE 20800
 
 int duration_passed = 0;
-int resolution = 100;
+int resolution = 360;
 uint32_t note_length = 500;
 
 double osc_1_inc = 30;
@@ -145,6 +144,7 @@ void note(struct Voice note_voice, double freq, double length) {
 }
 
 void rest(double length) {
+    SysTick_Config(0);
     note_length = length;
     while (duration_passed != 1);
     duration_passed = 0;
@@ -153,18 +153,12 @@ void rest(double length) {
 double get_freq(int key_n) {
     // Convert piano key number to frequency
     double f = pow(2, (key_n - 49)/ 12.0) * 440;
-    GPIO_SetValue(1, (1 << 18));
     return f;
 }
 
-
-
 int main(void) {
-    GPIO_SetDir(1, (101101 << 18), 1);
     init_dac();
     init_timer();
-
-    osc_1_buf = (double *) calloc (resolution, sizeof(double));
 
     double voice_sine[resolution];
     generate_sine(voice_sine, resolution);
@@ -196,18 +190,18 @@ int main(void) {
     int v;
     int n;
     double freq;
-    int arp[] = {40, 44, 47, 52, 47, 44};
+    double arp[] = {40, 44, 47, 52, 47, 44};
 
-    while (1) {
-        for (v = 0; v < 4; v++) {
-            for (n = 0; n < 4; n++) {
-                for (i = 0; i < 6; i++) {
-                    freq = get_freq(arp[i]);
-                    note(voice_1, freq, 125);
-                }
-            }
-        }
-    }
+    //while (1) {
+    //    for (v = 0; v < 4; v++) {
+    //        for (n = 0; n < 4; n++) {
+    //            for (i = 0; i < 6; i++) {
+    //                freq = get_freq(arp[i]);
+    //                note(voice_1, freq, 125);
+    //            }
+    //        }
+    //    }
+    //}
 
     double Cm[] = {40, 43, 47, 52, 55, 59, 64, 67, 71};
     double Bb[] = {38, 42, 45, 50, 54, 57, 62, 66, 69};
@@ -215,18 +209,18 @@ int main(void) {
 
     double *arps[] = {Cm, Bb, Fm, Cm, Bb, Fm, Cm, Cm};
 
-    //while (1) {
-    //    for (n = 0; n < 8; n++) {
-    //        for (i = 0; i < 9; i++) {
-    //            freq = get_freq(arps[n][i]);
-    //            note(voice_1, freq, 125);
-    //        }
-    //        for (i = 7; i > 0; i--) {
-    //            freq = get_freq(arps[n][i]);
-    //            note(voice_1, freq, 125);
-    //        }
-    //    }
-    //}
+    while (1) {
+        for (n = 0; n < 8; n++) {
+            for (i = 0; i < 9; i++) {
+                freq = get_freq(arps[n][i]);
+                note(voice_1, freq, 125);
+            }
+            for (i = 7; i > 0; i--) {
+                freq = get_freq(arps[n][i]);
+                note(voice_1, freq, 125);
+            }
+        }
+    }
 
     //int range = 10;
     //while (1) {
