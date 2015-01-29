@@ -48,18 +48,32 @@ void CAN_IRQHandler(void)
             //disable_interrupt();
             write_serial("\r\n", 2);*/
         }
-        else if (RXMsg.len == 5)
+        else if (RXMsg.len == 5) //music data
         {
             write_serial("Received MIDI\n\r", 15);
-            uint32_t note = RXMsg.id & 0b00001111000000000000000000000000;
-            uint32_t note2 = RXMsg.dataA[1];
+            uint8_t channel = RXMsg.dataA[0];
+            uint8_t note = RXMsg.dataA[1];
+            uint8_t volume = RXMsg.dataA[2];
+            uint8_t type = RXMsg.dataA[3];
+            uint8_t control = RXMsg.dataB[0];
             char toPrint[50];
-            //note >>= 24;
-            int recValLength = sprintf(toPrint, "Note: %x\r\n", note);
-        
-            //write_serial(toPrint, recValLength);
-            recValLength = sprintf(toPrint, "Note2: %d\r\n", note2);
+
+            int recValLength = sprintf(toPrint, "Channel: %d\r\n", channel);      
             write_serial(toPrint, recValLength);
+
+            recValLength = sprintf(toPrint, "Note: %d\r\n", note);
+            write_serial(toPrint, recValLength);
+
+            recValLength = sprintf(toPrint, "Volume: %d\r\n", volume);
+            write_serial(toPrint, recValLength);
+
+            recValLength = sprintf(toPrint, "Type: %d\r\n", type);
+            write_serial(toPrint, recValLength);
+
+            recValLength = sprintf(toPrint, "Control: %d\r\n", control);
+            write_serial(toPrint, recValLength);
+
+            write_serial("\r\n", 2);
         }
 
         else if(RXMsg.len == 8)
