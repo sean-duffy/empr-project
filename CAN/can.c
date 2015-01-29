@@ -5,13 +5,13 @@
 #include "can.h"
 #include "../UART/uart.h"
 
-#define debug_print(n, x) if(debug_flag) { write_serial(n, x); write_serial("\n\r", 2); }
+#define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 
 CAN_MSG_Type received_message;
 
 short unsigned int debug;
 
-void CAN_IRQHandler() {
+/*void CAN_IRQHandler() {
     debug_print("CAN Interrupt Fired", 19);
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
     if ((IntStatus>>0)&0x01) {
@@ -27,9 +27,18 @@ void CAN_IRQHandler() {
 
         debug_print(toPrint, recValLength);
     }
+}*/
+
+void CAN_init_message(void) {
+    received_message.format = 0x00;
+    received_message.id = 0x00;
+    received_message.len = 0x00;
+    received_message.type = 0x00;
+    received_message.dataA[0] = received_message.dataA[1] = received_message.dataA[2] = received_message.dataA[3] = 0x00000000;
+    received_message.dataB[0] = received_message.dataA[1] = received_message.dataA[2] = received_message.dataA[3] = 0x00000000;
 }
 
-void init_can(uint32_t baud_rate, short unsigned int debug_flag = 0) {
+void init_can(uint32_t baud_rate, short unsigned int debug_flag) {
     debug = debug_flag;
     debug_print("Initialising CAN module", 23);
 
@@ -56,14 +65,7 @@ void init_can(uint32_t baud_rate, short unsigned int debug_flag = 0) {
     debug_print("CAN Initialised", 15);
 }
 
-void CAN_init_message(void) {
-    received_message.format = 0x00;
-    received_message.id = 0x00;
-    received_message.len = 0x00;
-    received_message.type = 0x00;
-    received_message.dataA[0] = received_message.dataA[1] = received_message.dataA[2] = received_message.dataA[3] = 0x00000000;
-    received_message.dataB[0] = received_message.dataA[1] = received_message.dataA[2] = received_message.dataA[3] = 0x00000000;
-}
+
 
 void enable_interrupt() {
     //CAN_IRQCmd(LPC_CAN2, CANINT_FCE, ENABLE);  //fullcan interrupt (29bit identifiers)
