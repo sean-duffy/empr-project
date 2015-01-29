@@ -35,6 +35,8 @@ double *osc_3_buf;
 double osc_3_value;
 double osc_3_mix;
 
+double mix_inc = 0.00002;
+
 double osc_mix;
 
 struct Voice {
@@ -51,24 +53,20 @@ void SysTick_Handler(void) {
         osc_1_tick = 0;
     }
 
-    if (osc_2_tick >= resolution) {
-        osc_2_tick = 0;
-    }
-
-    if (osc_3_tick >= resolution) {
-        osc_3_tick = 0;
+    if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
+        mix_inc *= -1;
     }
 
     osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
-    osc_2_value = osc_2_buf[(int) floor(osc_2_tick)];
-    osc_3_value = osc_3_buf[(int) floor(osc_3_tick)];
+    osc_2_value = osc_2_buf[(int) floor(osc_1_tick)];
 
-    osc_mix = osc_1_value*osc_1_mix + osc_2_value*osc_2_mix;
+    osc_mix = osc_1_value*osc_1_mix + osc_2_value*osc_2_mix * 1.8;
 
     DAC_UpdateValue(LPC_DAC, (int) floor((osc_mix + 1.0) * 300));
     osc_1_tick += osc_1_inc;
-    osc_2_tick += osc_2_inc;
-    osc_3_tick += osc_3_inc;
+
+    osc_1_mix += mix_inc;
+    osc_2_mix -= mix_inc;
 }
 
 void TIMER0_IRQHandler(void) {
@@ -133,14 +131,11 @@ int init_timer(void) {
 }
 
 void note(struct Voice note_voice, double freq, double length) {
-    osc_1_buf = note_voice.osc_1_buf;
-    osc_2_buf = note_voice.osc_2_buf;
-
     osc_1_inc = 0.00858141 * freq;
     osc_2_inc = osc_1_inc;
 
-    osc_1_mix = note_voice.osc_1_mix;
-    osc_2_mix = note_voice.osc_2_mix;
+    //osc_1_mix = note_voice.osc_1_mix;
+    //osc_2_mix = note_voice.osc_2_mix;
 
     SysTick_Config(2400);
     note_length = length;
@@ -161,6 +156,8 @@ double get_freq(int key_n){
     return (double) f;
 }
 
+
+
 int main(void) {
     init_dac();
     init_timer();
@@ -173,20 +170,25 @@ int main(void) {
     double voice_square[resolution];
     generate_square(voice_square, resolution);
 
-    double voice_triangle[resolution];
-    generate_triangle(voice_triangle, resolution);
-
     double voice_sawtooth[resolution];
     generate_sawtooth(voice_sawtooth, resolution);
 
-    double *voices[] = {voice_sine, voice_square, voice_triangle, voice_sawtooth};
+    double voice_sawtooth_filter[resolution];
+    generate_sawtooth(voice_sawtooth_filter, resolution);
+    low_pass_filter(voice_sawtooth_filter, resolution, 16);
 
     struct Voice voice_1;
     voice_1.osc_1_buf = voice_sawtooth;
-    voice_1.osc_1_mix = 0.5;
-    voice_1.osc_2_buf = voice_square;
-    voice_1.osc_2_mix = 0.5;
+    voice_1.osc_1_mix = 1;
+    voice_1.osc_2_buf = voice_sawtooth_filter;
+    voice_1.osc_2_mix = 0;
     voice_1.osc_2_detune = 0;
+
+    osc_1_mix = voice_1.osc_1_mix;
+    osc_2_mix = voice_1.osc_2_mix;
+    osc_1_buf = voice_1.osc_1_buf;
+    osc_2_buf = voice_1.osc_2_buf;
+    mix_inc = 0;
 
     int i;
     int v;
@@ -194,16 +196,16 @@ int main(void) {
     double freq;
     double arp[] = {40, 44, 47, 52, 47, 44};
 
-    //while (1) {
-    //    for (v = 0; v < 4; v++) {
-    //        for (n = 0; n < 4; n++) {
-    //            for (i = 0; i < 6; i++) {
-    //                freq = get_freq(arp[i]);
-    //                note(voices[v], freq, 125);
-    //            }
-    //        }
-    //    }
-    //}
+    while (1) {
+        for (v = 0; v < 4; v++) {
+            for (n = 0; n < 4; n++) {
+                for (i = 0; i < 6; i++) {
+                    freq = get_freq(arp[i]);
+                    note(voice_1, freq, 125);
+                }
+            }
+        }
+    }
 
     double Cm[] = {40, 43, 47, 52, 55, 59, 64, 67, 71};
     double Bb[] = {38, 42, 45, 50, 54, 57, 62, 66, 69};
@@ -211,18 +213,18 @@ int main(void) {
 
     double *arps[] = {Cm, Bb, Fm, Cm, Bb, Fm, Cm, Cm};
 
-    while (1) {
-        for (n = 0; n < 8; n++) {
-            for (i = 0; i < 9; i++) {
-                freq = get_freq(arps[n][i]);
-                note(voice_1, freq, 125);
-            }
-            for (i = 7; i > 0; i--) {
-                freq = get_freq(arps[n][i]);
-                note(voice_1, freq, 125);
-            }
-        }
-    }
+    //while (1) {
+    //    for (n = 0; n < 8; n++) {
+    //        for (i = 0; i < 9; i++) {
+    //            freq = get_freq(arps[n][i]);
+    //            note(voice_1, freq, 125);
+    //        }
+    //        for (i = 7; i > 0; i--) {
+    //            freq = get_freq(arps[n][i]);
+    //            note(voice_1, freq, 125);
+    //        }
+    //    }
+    //}
 
     //int range = 10;
     //while (1) {
