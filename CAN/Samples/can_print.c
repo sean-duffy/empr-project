@@ -16,10 +16,10 @@ void CAN_IRQHandler(void)
     if((IntStatus>>0)&0x01)
     {
         CAN_ReceiveMsg(LPC_CAN2, &RXMsg);
-        if(RXMsg.id  & 0b00000000000000000000000000000100) //text
-        {/*
-            write_serial("Received text\n\r", 15);
-            char toPrint[50];
+        if(RXMsg.len == 0) //text start/end
+        { 
+            write_serial("Received text S/E\n\r", 19);
+            /*char toPrint[50];
 
             uint32_t format = RXMsg.format;
             int recValLength = sprintf(toPrint, "Format: %x\r\n", format);
@@ -48,7 +48,7 @@ void CAN_IRQHandler(void)
             //disable_interrupt();
             write_serial("\r\n", 2);*/
         }
-        else
+        else if (RXMsg.len == 5)
         {
             write_serial("Received MIDI\n\r", 15);
             uint32_t note = RXMsg.id & 0b00001111000000000000000000000000;
@@ -61,6 +61,16 @@ void CAN_IRQHandler(void)
             recValLength = sprintf(toPrint, "Note2: %d\r\n", note2);
             write_serial(toPrint, recValLength);
         }
+
+        else if(RXMsg.len == 8)
+        {
+            write_serial("Received text\r\n", 15);
+        }
+
+        else
+        {
+            write_serial("WTF\r\n", 5); 
+        }   
     }
     
 }
