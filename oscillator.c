@@ -57,3 +57,21 @@ void generate_triangle(double *buf, int res) {
         buf[i] = point_triangle((double) i/res, 0);
     }
 }
+
+void low_pass_filter(double *buf, int buflen, int n) {
+    int i;
+    int j;
+    int index;
+    double new_value;
+    for (i = 0; i < buflen; i++) {
+        if (i >= (n - 1)) {
+
+            new_value = 0;
+            for (j = 0; j < n; j++) {
+                new_value += buf[i-j];
+            }
+
+            buf[i] = new_value / n;
+        }
+    }
+}
