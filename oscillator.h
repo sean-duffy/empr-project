@@ -9,3 +9,5 @@ void generate_sine(double *buf, int res);
 void generate_square(double *buf, int res);
 void generate_sawtooth(double *buf, int res);
 void generate_triangle(double *buf, int res);
+
+void low_pass_filter(double *buf, int buflen, int n);

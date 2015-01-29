@@ -12,42 +12,62 @@
 
 #include "oscillator.h"
 
-#define SECOND 1E9
+#define SAMPLE_RATE 20800
 
-int current_tick = 0;
-double *wave_buf;
 int duration_passed = 0;
 int resolution = 100;
 uint32_t note_length = 500;
 
-typedef enum {SINE, SQUARE, TRIANGLE, SAWTOOTH} wave_t;
+double osc_1_inc = 30;
+double osc_1_tick = 0;
+double *osc_1_buf;
+double osc_1_value;
+double osc_1_mix;
 
-double osc_1_freq = 600;
-int osc_1_tick = 0;
-int osc_1_res;
-wave_t osc_1_wave = SINE;
+double osc_2_inc = 30;
+double osc_2_tick = 0;
+double *osc_2_buf;
+double osc_2_value;
+double osc_2_mix;
+
+double osc_3_inc = 30;
+double osc_3_tick = 0;
+double *osc_3_buf;
+double osc_3_value;
+double osc_3_mix;
+
+double mix_inc = 0.00002;
+
+double osc_mix;
+
+struct Voice {
+    double *osc_1_buf;
+    double osc_1_mix;
+
+    double *osc_2_buf;
+    double osc_2_detune;
+    double osc_2_mix;
+};
 
 void SysTick_Handler(void) {
-    double osc_1_value;
-
-    osc_1_res = 1 / osc_1_freq * 16600;
-    if (osc_1_tick >= osc_1_res) {
+    if (osc_1_tick >= resolution) {
         osc_1_tick = 0;
     }
 
-    if (osc_1_wave == SINE) {
-        osc_1_value = point_sine(1.0/osc_1_res * osc_1_tick, 0) + 1.0;
-    } else if (osc_1_wave == SQUARE) {
-        osc_1_value = point_square(1.0/osc_1_res * osc_1_tick, 0) + 1.0;
-    } else if (osc_1_wave == TRIANGLE) {
-        osc_1_value = point_triangle(1.0/osc_1_res * osc_1_tick, 0) + 1.0;
-    } else if (osc_1_wave == SAWTOOTH) {
-        osc_1_value = point_sawtooth(1.0/osc_1_res * osc_1_tick, 0) + 1.0;
+    if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
+        mix_inc *= -1;
     }
 
-    DAC_UpdateValue(LPC_DAC, (int) floor(osc_1_value * 300));
+    osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
+    osc_2_value = osc_2_buf[(int) floor(osc_1_tick)];
 
-    osc_1_tick += 1;
+    osc_mix = osc_1_value*osc_1_mix + osc_2_value*osc_2_mix * 1.8;
+
+    DAC_UpdateValue(LPC_DAC, (int) floor((osc_mix + 1.0) * 300));
+    osc_1_tick += osc_1_inc;
+
+    osc_1_mix += mix_inc;
+    osc_2_mix -= mix_inc;
 }
 
 void TIMER0_IRQHandler(void) {
@@ -111,10 +131,14 @@ int init_timer(void) {
     return 0;
 }
 
-void note(wave_t osc_wave, double freq, double length) {
-    osc_1_wave = osc_wave;
-    osc_1_freq = freq;
+void note(struct Voice note_voice, double freq, double length) {
+    osc_1_inc = 0.00858141 * freq;
+    osc_2_inc = osc_1_inc;
 
+    //osc_1_mix = note_voice.osc_1_mix;
+    //osc_2_mix = note_voice.osc_2_mix;
+
+    SysTick_Config(2400);
     note_length = length;
     while (duration_passed != 1);
     duration_passed = 0;
@@ -133,11 +157,40 @@ double get_freq(int key_n) {
     return f;
 }
 
+
+
 int main(void) {
     GPIO_SetDir(1, (101101 << 18), 1);
     init_dac();
     init_timer();
-    SysTick_Config(2275);
+
+    osc_1_buf = (double *) calloc (resolution, sizeof(double));
+
+    double voice_sine[resolution];
+    generate_sine(voice_sine, resolution);
+
+    double voice_square[resolution];
+    generate_square(voice_square, resolution);
+
+    double voice_sawtooth[resolution];
+    generate_sawtooth(voice_sawtooth, resolution);
+
+    double voice_sawtooth_filter[resolution];
+    generate_sawtooth(voice_sawtooth_filter, resolution);
+    low_pass_filter(voice_sawtooth_filter, resolution, 16);
+
+    struct Voice voice_1;
+    voice_1.osc_1_buf = voice_sawtooth;
+    voice_1.osc_1_mix = 1;
+    voice_1.osc_2_buf = voice_sawtooth_filter;
+    voice_1.osc_2_mix = 0;
+    voice_1.osc_2_detune = 0;
+
+    osc_1_mix = voice_1.osc_1_mix;
+    osc_2_mix = voice_1.osc_2_mix;
+    osc_1_buf = voice_1.osc_1_buf;
+    osc_2_buf = voice_1.osc_2_buf;
+    mix_inc = 0;
 
     int i;
     int v;
@@ -150,7 +203,7 @@ int main(void) {
             for (n = 0; n < 4; n++) {
                 for (i = 0; i < 6; i++) {
                     freq = get_freq(arp[i]);
-                    note(v, freq, 125);
+                    note(voice_1, freq, 125);
                 }
             }
         }
@@ -166,30 +219,29 @@ int main(void) {
     //    for (n = 0; n < 8; n++) {
     //        for (i = 0; i < 9; i++) {
     //            freq = get_freq(arps[n][i]);
-    //            
-    //            note(SAWTOOTH, freq, 125);
+    //            note(voice_1, freq, 125);
     //        }
     //        for (i = 7; i > 0; i--) {
     //            freq = get_freq(arps[n][i]);
-    //            note(SAWTOOTH, freq, 125);
+    //            note(voice_1, freq, 125);
     //        }
     //    }
     //}
 
-    int range = 10;
-    while (1) {
-        for (i = 0; i < range; i++) {
-            freq = get_freq(50);
+    //int range = 10;
+    //while (1) {
+    //    for (i = 0; i < range; i++) {
+    //        freq = get_freq(50);
 
-            if (i > (range/2)) {
-                freq += (range - i - (range/2));
-            } else {
-                freq += i;
-            }
+    //        if (i > (range/2)) {
+    //            freq += (range - i - (range/2));
+    //        } else {
+    //            freq += i;
+    //        }
 
-            note(SAWTOOTH, freq, 10);
-        }
-    }
+    //        note(voice_sawtooth, freq, 10);
+    //    }
+    //}
 
     return 0;
 }

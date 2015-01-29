@@ -7,7 +7,8 @@ int main(void) {
     int resolution = 360;
 
     wave_buf = (double *) calloc (resolution, sizeof(double));
-    generate_square(wave_buf, resolution);
+    generate_sawtooth(wave_buf, resolution);
+    low_pass_filter(wave_buf, resolution, 8);
 
     for (int i = 0; i < resolution; i++) {
         printf("%f\n", wave_buf[i]);
