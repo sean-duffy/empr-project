@@ -32,15 +32,15 @@ LDFLAGS=$(CMSISFL) -static -mcpu=cortex-m3 -mthumb -mthumb-interwork \
 
 LDFLAGS+=-L$(CMSIS)/lib -lDriversLPC17xxgnu
 
-EXECNAME	= bin/synth
+EXECNAME	= bin/main
 
-OBJ		= synth.o oscillator.o
+OBJ		= main.o CAN/can.o UART/uart.o MIDI/text_read.o
 
-all: 	synth
+all: 	main	
 	@echo "Build finished"
 
 
-synth: $(OBJ)
+main: $(OBJ)
 	$(CC) -o $(EXECNAME) $(OBJ) $(LDFLAGS)
 	$(OBJCOPY) -I elf32-little -O binary $(EXECNAME) $(EXECNAME).bin
 	
@@ -57,4 +57,3 @@ install:
 	cp $(EXECNAME).bin /media/$(USER)/MBED &
 	sync
 	@echo "Now press the reset button on all MBED file systems"
-
