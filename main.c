@@ -5,6 +5,7 @@
 
 #include "./CAN/can.h"
 #include "./UART/uart.h"
+#include "./MIDI/midi.h"
 
 CAN_MSG_Type RXMsg;
 
@@ -18,13 +19,20 @@ void CAN_IRQHandler(void)
         CAN_ReceiveMsg(LPC_CAN2, &RXMsg);
         if(RXMsg.len == 0) //text start/end
         { 
-            write_serial("Received text S/E\n\r", 19);
-            /*char toPrint[50];
+            
+            char a_print[100];
+            uint32_t text_data = (RXMsg.dataA[0])|(RXMsg.dataA[1]<<8)|(RXMsg.dataA[2]<<16)|(RXMsg.dataA[3]<<24);
+            
+            if ((RXMsg.id >> 25) == 1){
+                write_serial("Start: ",6);
+            } else if ((RXMsg.id >> 24) == 1){
+                write_serial("End\n\r",5);
+            } 
 
+            /*char toPrint[50];
             uint32_t format = RXMsg.format;
             int recValLength = sprintf(toPrint, "Format: %x\r\n", format);
             write_serial(toPrint, recValLength);
-
             uint32_t id = RXMsg.id;
             recValLength = sprintf(toPrint, "Id: %x\r\n", id);
             write_serial(toPrint, recValLength);
@@ -50,6 +58,8 @@ void CAN_IRQHandler(void)
         }
         else if (RXMsg.len == 5) //music data
         {
+            write_serial("n",2);
+            /* MUSIC DATA
             write_serial("Received MIDI\n\r", 15);
             uint8_t channel = RXMsg.dataA[0];
             uint8_t note = RXMsg.dataA[1];
@@ -74,17 +84,29 @@ void CAN_IRQHandler(void)
             write_serial(toPrint, recValLength);
 
             write_serial("\r\n", 2);
+            */
         }
 
         else if(RXMsg.len == 8)
         {
-            write_serial("Received text\r\n", 15);
+            char a_print[30];
+            uint32_t text_data;
+            int suc_len;
+
+            int i;
+            for(i = 0; i < 4; i++){
+                text_data = RXMsg.dataA[i];
+                suc_len = sprintf(a_print, "%c", (char) text_data);
+                write_serial(a_print, suc_len);
+            }
+
+            for(i = 0; i < 4; i++){
+                text_data = RXMsg.dataB[i];
+                suc_len = sprintf(a_print, "%c", (char) text_data);
+                write_serial(a_print, suc_len);
+            }
         }
 
-        else
-        {
-            write_serial("WTF\r\n", 5); 
-        }   
     }
     
 }
@@ -106,7 +128,7 @@ void main()
     LPC_GPIO0->FIOSET &= 0b111111111111111110111111111;
 
     serial_init();
-    write_serial("booted\n", 7);
+    write_serial("\r\n\r\nbooted\r\n", sizeof("\r\n\r\nbooted\r\n"));
     PINSEL_CFG_Type PinCfg;
     PinCfg.Funcnum = 2;
          PinCfg.OpenDrain = 0;
@@ -128,7 +150,7 @@ void main()
 
     CAN_SetAFMode(LPC_CANAF, CAN_AccBP);
 
-    write_serial("loaded\n", 7);
+    write_serial("loaded\n\r", 9);
     int i = 0, j = 0;
     char outVal[30];
     
