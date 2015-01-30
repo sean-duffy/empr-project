@@ -56,11 +56,11 @@ int main(void) {
         for (n = 0; n < 8; n++) {
             for (i = 0; i < 9; i++) {
                 freq = get_freq(arps[n][i]);
-                note(voice_1, freq, 125);
+                play_note(voice_1, freq, 125);
             }
             for (i = 7; i > 0; i--) {
                 freq = get_freq(arps[n][i]);
-                note(voice_1, freq, 125);
+                play_note(voice_1, freq, 125);
             }
         }
     }
