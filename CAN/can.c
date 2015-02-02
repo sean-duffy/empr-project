@@ -56,13 +56,20 @@ void init_can(uint32_t baud_rate, short unsigned int debug_flag) {
     PinCfg.Pinnum = 5;
     PINSEL_ConfigPin(&PinCfg);            
     
-    
     CAN_Init(LPC_CAN2, baud_rate);
 
     CAN_init_message();
     
     CAN_SetAFMode(LPC_CANAF, CAN_AccBP); //accept all traffic on init
     debug_print("CAN Initialised", 15);
+
+    CAN_InitMessage();
+    LPC_GPIO0->FIODIR |= (1 << 10);
+ 
+    CAN_IRQCmd(LPC_CAN2, CANINT_RIE, ENABLE);
+    NVIC_EnableIRQ(CAN_IRQn);
+
+    CAN_SetAFMode(LPC_CANAF, CAN_AccBP);
 }
 
 
