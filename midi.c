@@ -73,8 +73,8 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug)
             char b_print[30];
             char concat[100];
             int charCount = 0;
-            int len_A;
-            int len_B;
+            int len_A = 0;
+            int len_B = 0;
             
             len_A = sprintf(a_print, "%c", (char)received_message->dataA[0]);
             charCount += len_A;
