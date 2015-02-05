@@ -4,6 +4,7 @@
 
 #include "midi.h"
 #include "UART/uart.h"
+#include <string.h>
 
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
@@ -27,12 +28,25 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug)
     {
         //music data return
         debug_print_nnl("n", 2);
+        /*struct CAN_return_data music_data = 
+        {
+            {
+                received_message->dataA[0],
+                received_message->dataA[1],
+                received_message->dataA[2],
+                received_message->dataA[3],
+                received_message->dataB[0]
+            },
+            {},
+            1
+        }*/
+        //return music_data;
     }
     
     /*else if(received_message->len == 8)
     {
         
-        uint32_t text_data;
+        uint32_t text_da passing argument 1 of 'write_serial' makes pointer from ita;
         int suc_len;
 
         int i;
@@ -56,19 +70,43 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug)
     else if(received_message->len == 8)
         {
             char a_print[30];
-            int suc_len;
+            char b_print[30];
+            char concat[100];
+            int charCount = 0;
+            int len_A;
+            int len_B;
+            
+            len_A = sprintf(a_print, "%c", (char)received_message->dataA[0]);
+            charCount += len_A;
+            strcpy(concat, a_print);
 
             int i;
-            for(i = 0; i < 4; i++){
-                suc_len = sprintf(a_print, "%c", (char) received_message->dataA[i]);
-                debug_print_nnl(a_print, suc_len);
-                debug_print((char)suc_len, 2);
+            for(i = 1; i < 4; i++){
+                len_A = sprintf(a_print, "%c", (char)received_message->dataA[i]);
+                strcat(concat, a_print);
+                //debug_print_nnl(a_print, len_A);
+                charCount += len_A;
             }
 
             for(i = 0; i < 4; i++){
-                suc_len = sprintf(a_print, "%c", (char) received_message->dataB[i]);
-                debug_print_nnl(a_print, suc_len);
-                debug_print((char)suc_len, 2);
+                len_B = sprintf(b_print, "%c", (char)received_message->dataB[i]);
+                strcat(concat, b_print);
+                //debug_print_nnl(b_print, len_B);
+                charCount += len_B;
             }
+    
+            /*struct CAN_return_data inst_data = 
+            {
+                {},
+                {
+                    
+                },
+                0
+            }*/
+
+            //strcpy(concat, a_print);
+            //strcat(concat, b_print);
+            debug_print_nnl(concat, charCount);
+        
         }
 }
