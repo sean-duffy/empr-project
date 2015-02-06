@@ -4,7 +4,6 @@
 
 #include "CAN/can.h"
 #include "UART/uart.h"
-
 #include "SYNTH/oscillator.h"
 #include "SYNTH/synth.h"
 
@@ -52,20 +51,20 @@ void CAN_InitMessage(void) {
 }
 
 void main() {
-    init_dac();
-    init_can(250000, 0);
-
     int resolution = 360;
     set_resolution(resolution);
  
-    double voice_sawtooth[resolution];
-    generate_sine(voice_sawtooth, resolution);
+    double wave_buf[resolution];
+    generate_sine(wave_buf, resolution);
 
-    voice_1.osc_1_buf = voice_sawtooth;
+    voice_1.osc_1_buf = wave_buf;
     voice_1.osc_1_mix = 0.5;
-    voice_1.osc_2_buf = voice_sawtooth;
+    voice_1.osc_2_buf = wave_buf;
     voice_1.osc_2_mix = 0;
     voice_1.osc_2_detune = 0;
+
+    init_dac();
+    init_can(250000, 0);
 
     set_voice(voice_1);
     SysTick_Config(2400);

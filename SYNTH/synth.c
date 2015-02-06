@@ -25,13 +25,13 @@ double osc_1_mix;
 double osc_2_inc = 30;
 double osc_2_tick = 0;
 double *osc_2_buf;
-double osc_2_value;
+double osc_2_value = 0;
 double osc_2_mix;
 
 double osc_3_inc = 30;
 double osc_3_tick = 0;
 double *osc_3_buf;
-double osc_3_value;
+double osc_3_value = 0;
 double osc_3_mix;
 
 int note_mute = 1;
@@ -47,9 +47,9 @@ void SysTick_Handler(void) {
         osc_1_tick = 0;
     }
 
-    if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
-        mix_inc *= -1;
-    }
+    //if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
+    //    mix_inc *= -1;
+    //}
 
     osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
     osc_2_value = osc_2_buf[(int) floor(osc_1_tick)];
@@ -60,8 +60,8 @@ void SysTick_Handler(void) {
     DAC_UpdateValue(LPC_DAC, output_value * note_mute);
     osc_1_tick += osc_1_inc;
 
-    osc_1_mix += mix_inc;
-    osc_2_mix -= mix_inc;
+    //osc_1_mix += mix_inc;
+    //osc_2_mix -= mix_inc;
 }
 
 void init_dac(void) {
