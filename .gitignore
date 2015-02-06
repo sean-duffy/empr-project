@@ -1,5 +1,5 @@
-*.o
 *~
-bin
-.*
-a.out
+bin/
+*.o
+*.out
+*.swp

@@ -34,7 +34,11 @@ LDFLAGS+=-L$(CMSIS)/lib -lDriversLPC17xxgnu
 
 EXECNAME	= bin/main
 
+<<<<<<< HEAD:jashanMIDI/Makefile
 OBJ		= main.o CAN/can.o UART/uart.o midi.o
+=======
+OBJ		= main.o CAN/can.o UART/uart.o MIDI/text_read.o
+>>>>>>> text_reader:Makefile
 
 all: 	main	
 	@echo "Build finished"
