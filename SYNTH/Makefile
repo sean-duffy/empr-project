@@ -32,15 +32,15 @@ LDFLAGS=$(CMSISFL) -static -mcpu=cortex-m3 -mthumb -mthumb-interwork \
 
 LDFLAGS+=-L$(CMSIS)/lib -lDriversLPC17xxgnu
 
-EXECNAME	= bin/main
+EXECNAME	= bin/synth_test
 
-OBJ		= main.o CAN/can.o UART/uart.o MIDI/text_read.o SYNTH/synth.o SYNTH/oscillator.o
+OBJ		= synth_test.o synth.o oscillator.o
 
-all: 	main	
+all: 	synth_test	
 	@echo "Build finished"
 
 
-main: $(OBJ)
+synth_test: $(OBJ)
 	$(CC) -o $(EXECNAME) $(OBJ) $(LDFLAGS)
 	$(OBJCOPY) -I elf32-little -O binary $(EXECNAME) $(EXECNAME).bin
 	
