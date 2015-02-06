@@ -79,7 +79,7 @@ void init_dac(void) {
     DAC_Init (LPC_DAC);
 }
 
-void note_on(double freq, double length) {
+void note_on(double freq) {
     osc_1_inc = 0.00858141 * freq;
     osc_2_inc = osc_1_inc;
 

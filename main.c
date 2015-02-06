@@ -30,7 +30,7 @@ void CAN_IRQHandler(void)
                 if (volume == 0) {
                     note_off();
                 } else {
-                    note_on(get_freq(note), 500);
+                    note_on(get_freq(note));
                 }
             }
         } else if(RXMsg.len == 8) {

@@ -28,5 +28,5 @@ int init_timer(void);
 void set_resolution(int new_resolution);
 void set_voice(struct Voice voice);
 double get_freq(int key_n);
-void note_on(double freq, double length);
+void note_on(double freq);
 void note_off(void);
