@@ -34,11 +34,15 @@ double *osc_3_buf;
 double osc_3_value;
 double osc_3_mix;
 
+int note_mute = 1;
+
 double mix_inc = 0.00002;
 
 double osc_mix;
 
 void SysTick_Handler(void) {
+    double output_value;
+
     if (osc_1_tick >= resolution) {
         osc_1_tick = 0;
     }
@@ -51,8 +55,9 @@ void SysTick_Handler(void) {
     osc_2_value = osc_2_buf[(int) floor(osc_1_tick)];
 
     osc_mix = osc_1_value*osc_1_mix + osc_2_value*osc_2_mix;
+    output_value = (int) floor((osc_mix + 1.0) * 300);
 
-    DAC_UpdateValue(LPC_DAC, (int) floor((osc_mix + 1.0) * 300));
+    DAC_UpdateValue(LPC_DAC, output_value * note_mute);
     osc_1_tick += osc_1_inc;
 
     osc_1_mix += mix_inc;
@@ -74,15 +79,15 @@ void init_dac(void) {
     DAC_Init (LPC_DAC);
 }
 
-void play_note(struct Voice note_voice, double freq, double length) {
+void note_on(double freq, double length) {
     osc_1_inc = 0.00858141 * freq;
     osc_2_inc = osc_1_inc;
 
-    SysTick_Config(2400);
+    note_mute = 1;
 }
 
-void rest(double length) {
-    SysTick_Config(0);
+void note_off(void) {
+    note_mute = 0;
 }
 
 double get_freq(int key_n) {

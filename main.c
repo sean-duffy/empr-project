@@ -27,11 +27,11 @@ void CAN_IRQHandler(void)
             uint8_t type = RXMsg.dataA[3];
             uint8_t control = RXMsg.dataB[0];
 
-            if (channel == channel) {
+            if (channel == 1) {
                 if (volume == 0) {
-                    rest(0);
+                    note_off();
                 } else {
-                    play_note(voice_1, get_freq(note), 500);
+                    note_on(get_freq(note), 500);
                 }
             }
         } else if(RXMsg.len == 8) {
@@ -51,7 +51,6 @@ void CAN_InitMessage(void) {
     RXMsg.dataB[0] = RXMsg.dataA[1] = RXMsg.dataA[2] = RXMsg.dataA[3] = 0x00000000;
 }
 
-
 void main() {
     init_dac();
     init_can(250000, 0);
@@ -69,4 +68,5 @@ void main() {
     voice_1.osc_2_detune = 0;
 
     set_voice(voice_1);
+    SysTick_Config(2400);
 }
