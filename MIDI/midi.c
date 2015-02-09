@@ -15,6 +15,7 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
     static uint8_t flag = 0;
     static uint8_t count = 0;
     static char concat[100];
+    static int char_count = 0;
 
     if(received_message->len == 0)
     {
@@ -23,6 +24,7 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
             debug_print("Start", 5);
             flag = 1;
             concat[0] = '\0';
+            char_count = 0;
         } 
 
         else if ((received_message->id >> 24) == 1)
@@ -75,57 +77,75 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
     switch count {
         case 1:
             *ret.text_data.track = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 2:
             *ret.text_data.bpm = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 3:
             *ret.text_data.ch0 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 4:
             *ret.text_data.ch1 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 5:
             *ret.text_data.ch2 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 6:
             *ret.text_data.ch3 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 7:
             *ret.text_data.ch4 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 8:
             *ret.text_data.ch5 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 9:
             *ret.text_data.ch6 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 10:
             *ret.text_data.ch7 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 11:
             *ret.text_data.ch8 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 12:
             *ret.text_data.ch9 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 13:
             *ret.text_data.ch10 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 14:
             *ret.text_data.ch11 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 15:
             *ret.text_data.ch12 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 16:
             *ret.text_data.ch13 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 17:
             *ret.text_data.ch14 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         case 18:
             *ret.text_data.ch15 = concat;
+            debug_print_nnl(concat, charCount);
             break;
         default:
             return;

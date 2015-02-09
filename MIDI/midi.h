@@ -1,7 +1,7 @@
 #ifndef MIDI_H
 #define MIDI_H
 
-/*
+
 struct CAN_return_data
 {
     struct midi_message midi_data;
@@ -39,7 +39,7 @@ struct instruments
     char ch14[30];
     char ch15[30];
 };
-*/
+
 void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN_return_data* ret);
 
 
