@@ -5,7 +5,7 @@
 struct CAN_return_data
 {
     struct midi_message midi_data;
-    struct instruments channel_data;
+    struct instruments text_data;
     uint8_t is_midi;
 };
 
@@ -19,7 +19,9 @@ struct midi_message
 };
 
 struct instruments
-{
+{   
+    char track[100];
+    char bpm[15];
     char ch0[30];
     char ch1[30];
     char ch2[30];
@@ -38,7 +40,7 @@ struct instruments
     char ch15[30];
 };
 */
-void interpret_message(CAN_MSG_Type* received_message, uint8_t debug);
+void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN_return_data* ret);
 
 
 #endif
