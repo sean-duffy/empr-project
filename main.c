@@ -8,6 +8,7 @@
 #include "MIDI/midi.h"
 
 CAN_MSG_Type RXMsg;
+struct CAN_return_data message;
 
 void CAN_IRQHandler(void)
 {
@@ -16,7 +17,7 @@ void CAN_IRQHandler(void)
     if((IntStatus>>0)&0x01)
     {
         CAN_ReceiveMsg(LPC_CAN2, &RXMsg);
-        interpret_message(&RXMsg, 1);
+        interpret_message(&RXMsg, 1, &message);
     }
     
 }
