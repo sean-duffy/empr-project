@@ -53,6 +53,7 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
             char b_print[30];
             int len_A = 0;
             int len_B = 0;
+            int i;
             
             len_A = sprintf(a_print, "%c", (char)received_message->dataA[0]);
             char_count += len_A;
@@ -77,77 +78,130 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
     switch (count) {
         case 1:
             strcpy(ret.text_data.track, concat);
+            i = strlen(ocncat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 2:
             strcpy(ret.text_data.bpm, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 3:
             strcpy(ret.text_data.ch0, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 4:
             strcpy(ret.text_data.ch1, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 5:
             strcpy(ret.text_data.ch2, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 6:
             strcpy(ret.text_data.ch3, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 7:
             strcpy(ret.text_data.ch4, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 8:
             strcpy(ret.text_data.ch5, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 9:
             strcpy(ret.text_data.ch6, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 10:
             strcpy(ret.text_data.ch7, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 11:
             strcpy(ret.text_data.ch8, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 12:
             strcpy(ret.text_data.ch9, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 13:
             strcpy(ret.text_data.ch10, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 14:
             strcpy(ret.text_data.ch11, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 15:
             strcpy(ret.text_data.ch12, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 16:
             strcpy(ret.text_data.ch13, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 17:
             strcpy(ret.text_data.ch14, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
         case 18:
             strcpy(ret.text_data.ch15, concat);
+            concat[i] = '\n';
+            concat[i+1] = '\r';
+            concat[i+2] = '\0';
             debug_print_nnl(concat, char_count);
             break;
-        default:
-            return;
     }
 }
