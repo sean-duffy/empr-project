@@ -68,4 +68,6 @@ void main() {
 
     set_voice(voice_1);
     SysTick_Config(2400);
+
+    while (1);
 }
