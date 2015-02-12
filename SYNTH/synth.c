@@ -16,13 +16,13 @@ int duration_passed = 0;
 int resolution;
 uint32_t note_length = 500;
 
-double osc_1_inc = 30;
+double osc_1_inc = 3;
 double osc_1_tick = 0;
 double *osc_1_buf;
 double osc_1_value;
 double osc_1_mix;
 
-double osc_2_inc = 30;
+double osc_2_inc = 3;
 double osc_2_tick = 0;
 double *osc_2_buf;
 double osc_2_value = 0;
