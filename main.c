@@ -6,9 +6,13 @@
 #include "CAN/can.h"
 #include "UART/uart.h"
 #include "MIDI/midi.h"
-
+#include <string.h>
+int debug = 1;
 CAN_MSG_Type RXMsg;
 struct CAN_return_data message;
+
+#define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
+#define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 
 void CAN_IRQHandler(void)
 {
@@ -18,6 +22,17 @@ void CAN_IRQHandler(void)
     {
         CAN_ReceiveMsg(LPC_CAN2, &RXMsg);
         interpret_message(&RXMsg, 1, &message);
+
+        if (message.done){
+            debug_print_nnl(message.text_data.track, strlen(message.text_data.track));
+            debug_print_nnl(message.text_data.bpm, strlen(message.text_data.bpm));
+                
+            int i;
+            for(i=0; i<15; i++){
+                debug_print_nnl(message.text_data.channel[i], strlen(message.text_data.channel[i]));
+            }
+            message.done = 0;
+        }        
     }
     
 }
@@ -61,7 +76,6 @@ void main()
     CAN_SetAFMode(LPC_CANAF, CAN_AccBP);
 
     write_serial("loaded\n\r", 9);
-    
 }
 
 void delay()
