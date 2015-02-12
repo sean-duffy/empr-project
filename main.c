@@ -10,8 +10,7 @@
 CAN_MSG_Type RXMsg;
 struct Voice voice_1;
 
-void CAN_IRQHandler(void)
-{
+void CAN_IRQHandler(void) {
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
 
     if((IntStatus>>0)&0x01)
