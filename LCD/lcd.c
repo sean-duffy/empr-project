@@ -199,3 +199,89 @@ uint8_t readAddressCounter(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
 {
 	return (readBACRegister(i2cPort, addr) & 0x7F);
 }
+
+void setFirstLineText(char* arrayPointer, unsigned int lineLength)
+{
+    firstLineText = arrayPointer;
+    firstLinePos = 0;
+    firstLineLength = lineLength;
+}
+
+void setSecondLineText(char* arrayPointer, unsigned int lineLength)
+{
+    secondLineText = arrayPointer;
+    secondLinePos = 0;
+    secondLineLength = lineLength;
+}
+
+void scrollAndPrintFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
+{
+    clearFirstLine(i2cPort, addr);
+    lcdWrite(i2cPort, addr, 0x2);
+    int currPos = firstLinePos;
+    int charsPrinted = 0;
+    while(firstLineText[currPos] != '\0' && charsPrinted < 16)
+	{
+		/*char flagVal[30];
+		int bacVal = readAddressCounter(i2cPort, addr);
+		int flagValLength = sprintf(flagVal, "Value: %x\r\n", bacVal);
+		write_usb_serial_blocking(flagVal, flagValLength);*/
+
+		lcdPrintChar(i2cPort, addr, mapCharToLcdInt(firstLineText[currPos++]));
+		charsPrinted++;
+	}
+
+    firstLinePos++;
+    if(firstLinePos >= firstLineLength)
+    {
+        firstLinePos = 0;
+    }
+}
+
+void scrollAndPrintSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
+{
+    clearSecondLine(i2cPort, addr);
+    lcdWrite(i2cPort, addr, 0xC0);
+    int currPos = secondLinePos;
+    int charsPrinted = 0;
+    while(secondLineText[currPos] != '\0' && charsPrinted < 16)
+	{
+		/*char flagVal[30];
+		int bacVal = readAddressCounter(i2cPort, addr);
+		int flagValLength = sprintf(flagVal, "Value: %x\r\n", bacVal);
+		write_usb_serial_blocking(flagVal, flagValLength);*/
+
+		lcdPrintChar(i2cPort, addr, mapCharToLcdInt(secondLineText[currPos++]));
+		charsPrinted++;
+	}
+
+    secondLinePos++;
+    if(secondLinePos >= secondLineLength)
+    {
+        secondLinePos = 0;
+    }
+}
+
+void clearFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
+{
+    lcdWrite(i2cPort, addr, 0x2); //reset cursor
+    int i = 0;
+    
+    while (i < 16)
+    {
+        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(' '));
+        i++;
+    }
+}
+
+void clearSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
+{
+    lcdWrite(i2cPort, addr, 0xC0);
+    int i = 0;
+    
+    while (i < 16)
+    {
+        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(' '));
+        i++;
+    }
+}
