@@ -34,4 +34,7 @@ void scrollAndPrintSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr);
 void clearFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr);
 void clearSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr);
 
+void staticPrintFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr, char* text);
+void staticPrintSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr, char* text);
+
 #endif

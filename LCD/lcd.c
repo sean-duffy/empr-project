@@ -217,7 +217,7 @@ void setSecondLineText(char* arrayPointer, unsigned int lineLength)
 void scrollAndPrintFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
 {
     clearFirstLine(i2cPort, addr);
-    lcdWrite(i2cPort, addr, 0x2);
+    lcdWrite(i2cPort, addr, 0x02);
     int currPos = firstLinePos;
     int charsPrinted = 0;
     while(firstLineText[currPos] != '\0' && charsPrinted < 16)
@@ -264,7 +264,7 @@ void scrollAndPrintSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
 
 void clearFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
 {
-    lcdWrite(i2cPort, addr, 0x2); //reset cursor
+    lcdWrite(i2cPort, addr, 0x02); //reset cursor
     int i = 0;
     
     while (i < 16)
@@ -283,5 +283,27 @@ void clearSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
     {
         lcdPrintChar(i2cPort, addr, mapCharToLcdInt(' '));
         i++;
+    }
+}
+
+void staticPrintFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr, char* text)
+{
+    clearFirstLine(i2cPort, addr);
+    lcdWrite(i2cPort, addr, 0x02);
+    int idx = 0;
+    while(text[idx] != '\0' && idx < 16)
+    {
+        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(text[idx++]));
+    }
+}
+
+void staticPrintSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr, char* text)
+{
+    clearSecondLine(i2cPort, addr);
+    lcdWrite(i2cPort, addr, 0xC0);
+    int idx = 0;
+    while(text[idx] != '\0' && idx < 16)
+    {
+        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(text[idx++]));
     }
 }
