@@ -16,6 +16,8 @@ void main()
 	delay(5);
 	i2cInit(LPC_I2C1, 100000);
 	lcdInit(LPC_I2C1, LCDAddr, 0);
+    //clearFirstLine(LPC_I2C1, LCDAddr);
+    //writeVolCharToCGRAM(LPC_I2C1, LCDAddr);
 
     setFirstLineText((char*)testStr, 66);
     setSecondLineText((char*)testStr2, 29);
@@ -26,5 +28,7 @@ void main()
         //staticPrintSecondLine(LPC_I2C1, LCDAddr, testStr2);
         delay(20);
     }
+
+    //while(1);
 }
 

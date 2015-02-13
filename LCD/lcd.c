@@ -307,3 +307,27 @@ void staticPrintSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr, char* text)
         lcdPrintChar(i2cPort, addr, mapCharToLcdInt(text[idx++]));
     }
 }
+
+void writeVolCharToCGRAM(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
+{
+    lcdWrite(i2cPort, addr, 0x40);
+    
+    lcdWrite(i2cPort, addr, 0b00000001);
+    lcdWrite(i2cPort, addr, 0b00000011);
+    lcdWrite(i2cPort, addr, 0b00000111);
+    lcdWrite(i2cPort, addr, 0b00011111);
+    lcdWrite(i2cPort, addr, 0b00011111);
+    lcdWrite(i2cPort, addr, 0b00000111);
+    lcdWrite(i2cPort, addr, 0b00000011);
+    lcdWrite(i2cPort, addr, 0b00000001);
+
+   /* lcdWrite(i2cPort, addr, 0b00000001);
+    lcdWrite(i2cPort, addr, 0b00000011);
+    lcdWrite(i2cPort, addr, 0b00000111);
+    lcdWrite(i2cPort, addr, 0b11111111);
+    lcdWrite(i2cPort, addr, 0b11111111);
+    lcdWrite(i2cPort, addr, 0b11111111);
+    lcdWrite(i2cPort, addr, 0b00000111);
+    lcdWrite(i2cPort, addr, 0b00000011);*/
+
+}
