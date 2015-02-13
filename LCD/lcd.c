@@ -161,14 +161,15 @@ void setDDRAMAddress(LPC_I2C_TypeDef* i2cPort, uint8_t addr, uint8_t targetAddr)
 
 int mapCharToLcdInt(char c)
 {
-	if(c < 91)
-	{
+	if (c == '#') {
+        return 19;
+    } else if (c == '_') {
+        return 49;
+	} else if (c < 91) {
 		return c + 128;
-	}
-	else
-	{
+	} else {
 		return c;
-	}
+    }
 }
 
 uint8_t readBACRegister(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
