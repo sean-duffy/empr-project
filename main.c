@@ -29,6 +29,9 @@ void CAN_IRQHandler(void)
                 
             int i;
             for(i=0; i<15; i++){
+		char setup[10];
+		sprintf(setup, "%d: ", i);
+		debug_print_nnl(setup, strlen(setup));
                 debug_print_nnl(message.text_data.channel[i], strlen(message.text_data.channel[i]));
             }
             message.done = 0;
