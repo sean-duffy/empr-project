@@ -16,11 +16,17 @@ int duration_passed = 0;
 int resolution;
 uint32_t note_length = 500;
 
+int released = 0;
+
 double osc_1_inc = 3;
 double osc_1_tick = 0;
 double *osc_1_buf;
 double osc_1_value;
 double osc_1_mix;
+
+double output_envelope = 1;
+double osc_1_attack_inc = 0;
+double osc_1_release_inc = 0;
 
 double osc_2_inc = 3;
 double osc_2_tick = 0;
@@ -54,11 +60,25 @@ void SysTick_Handler(void) {
     osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
     osc_2_value = osc_2_buf[(int) floor(osc_1_tick)];
 
-    osc_mix = osc_1_value*osc_1_mix + osc_2_value*osc_2_mix;
+    if (output_envelope < 0) {
+        output_envelope = 0;
+    }
+
+    osc_mix = osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix;
     output_value = (int) floor((osc_mix + 1.0) * 300);
 
     DAC_UpdateValue(LPC_DAC, output_value * note_mute);
     osc_1_tick += osc_1_inc;
+
+    // Attack
+    if (output_envelope < 1) {
+        output_envelope += osc_1_attack_inc;
+    }
+
+    // Release
+    if (output_envelope > 0 && released == 1) {
+        output_envelope += osc_1_release_inc;
+    }
 
     //osc_1_mix += mix_inc;
     //osc_2_mix -= mix_inc;
@@ -80,14 +100,15 @@ void init_dac(void) {
 }
 
 void note_on(double freq) {
+    released = 0;
     osc_1_inc = 0.00858141 * freq;
     osc_2_inc = osc_1_inc;
 
-    note_mute = 1;
+    output_envelope = 0;
 }
 
 void note_off(void) {
-    note_mute = 0;
+    released = 1;
 }
 
 double get_freq(int key_n) {
@@ -101,6 +122,8 @@ void set_voice(struct Voice voice) {
     osc_2_mix = voice.osc_2_mix;
     osc_1_buf = voice.osc_1_buf;
     osc_2_buf = voice.osc_2_buf;
+    osc_1_attack_inc = 0.001 * voice.osc_1_attack;
+    osc_1_release_inc = -0.001 * voice.osc_1_release;
     mix_inc = 0;
 }
 
