@@ -15,6 +15,8 @@
 struct Voice {
     double *osc_1_buf;
     double osc_1_mix;
+    double osc_1_attack;
+    double osc_1_release;
 
     double *osc_2_buf;
     double osc_2_detune;
