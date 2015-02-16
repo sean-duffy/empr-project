@@ -49,17 +49,22 @@ void CAN_InitMessage(void) {
     RXMsg.dataB[0] = RXMsg.dataA[1] = RXMsg.dataA[2] = RXMsg.dataA[3] = 0x00000000;
 }
 
+
+
 void main() {
     int resolution = 360;
     set_resolution(resolution);
  
-    double wave_buf[resolution];
-    generate_sawtooth(wave_buf, resolution);
+    double wave_buf_1[resolution];
+    generate_sawtooth(wave_buf_1, resolution);
 
-    voice_1.osc_1_buf = wave_buf;
+    double wave_buf_2[resolution];
+    generate_square(wave_buf_2, resolution);
+
+    voice_1.osc_1_buf = wave_buf_1;
     voice_1.osc_1_mix = 0.5;
-    voice_1.osc_2_buf = wave_buf;
-    voice_1.osc_2_mix = 0;
+    voice_1.osc_2_buf = wave_buf_2;
+    voice_1.osc_2_mix = 0.5;
     voice_1.osc_2_detune = 0;
     voice_1.output_attack = 0.5;
     voice_1.output_release = 0.8;
