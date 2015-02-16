@@ -25,8 +25,8 @@ double osc_1_value;
 double osc_1_mix;
 
 double output_envelope = 1;
-double osc_1_attack_inc = 0;
-double osc_1_release_inc = 0;
+double output_attack_inc = 0;
+double output_release_inc = 0;
 
 double osc_2_inc = 3;
 double osc_2_tick = 0;
@@ -72,12 +72,12 @@ void SysTick_Handler(void) {
 
     // Attack
     if (output_envelope < 1) {
-        output_envelope += osc_1_attack_inc;
+        output_envelope += output_attack_inc;
     }
 
     // Release
     if (output_envelope > 0 && released == 1) {
-        output_envelope += osc_1_release_inc;
+        output_envelope += output_release_inc;
     }
 
     //osc_1_mix += mix_inc;
@@ -122,8 +122,8 @@ void set_voice(struct Voice voice) {
     osc_2_mix = voice.osc_2_mix;
     osc_1_buf = voice.osc_1_buf;
     osc_2_buf = voice.osc_2_buf;
-    osc_1_attack_inc = 0.001 * voice.osc_1_attack;
-    osc_1_release_inc = -0.001 * voice.osc_1_release;
+    output_attack_inc = 0.001 * voice.output_attack;
+    output_release_inc = -0.001 * voice.output_release;
     mix_inc = 0;
 }
 
