@@ -9,6 +9,7 @@
 
 CAN_MSG_Type RXMsg;
 struct Voice voice_1;
+uint8_t channel_playing = 1;
 
 void CAN_IRQHandler(void) {
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
@@ -24,7 +25,7 @@ void CAN_IRQHandler(void) {
             uint8_t volume = RXMsg.dataA[2];
             uint8_t type = RXMsg.dataA[3];
             uint8_t control = RXMsg.dataB[0];
-            if (channel == 1) {
+            if (channel == channel_playing) {
                 if (volume == 0) {
                     note_off();
                 } else {
