@@ -66,8 +66,9 @@ void main() {
     voice_1.osc_2_buf = wave_buf_2;
     voice_1.osc_2_mix = 0.5;
     voice_1.osc_2_detune = 0;
-    voice_1.output_attack = 0.5;
+    voice_1.output_attack = 1;
     voice_1.output_release = 0.8;
+    voice_1.envelope_on = 0;
 
     init_dac();
     init_can(250000, 0);

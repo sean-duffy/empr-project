@@ -17,6 +17,7 @@ struct Voice {
     double osc_1_mix;
     double output_attack;
     double output_release;
+    int envelope_on;
 
     double *osc_2_buf;
     double osc_2_detune;

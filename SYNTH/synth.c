@@ -24,6 +24,7 @@ double *osc_1_buf;
 double osc_1_value;
 double osc_1_mix;
 
+int envelope_on;
 double output_envelope = 1;
 double output_attack_inc = 0;
 double output_release_inc = 0;
@@ -71,7 +72,7 @@ void SysTick_Handler(void) {
     osc_1_tick += osc_1_inc;
 
     // Attack
-    if (output_envelope < 1) {
+    if (output_envelope < 1 && released == 0) {
         output_envelope += output_attack_inc;
     }
 
@@ -104,11 +105,19 @@ void note_on(double freq) {
     osc_1_inc = 0.00858141 * freq;
     osc_2_inc = osc_1_inc;
 
-    output_envelope = 0;
+    if (envelope_on) {
+        output_envelope = 0;
+    } else {
+        output_envelope = 1;
+    }
 }
 
 void note_off(void) {
-    released = 1;
+    if (envelope_on) {
+        released = 1;
+    } else {
+        output_envelope = 0;
+    }
 }
 
 double get_freq(int key_n) {
@@ -122,6 +131,7 @@ void set_voice(struct Voice voice) {
     osc_2_mix = voice.osc_2_mix;
     osc_1_buf = voice.osc_1_buf;
     osc_2_buf = voice.osc_2_buf;
+    envelope_on = voice.envelope_on;
     output_attack_inc = 0.001 * voice.output_attack;
     output_release_inc = -0.001 * voice.output_release;
     mix_inc = 0;
