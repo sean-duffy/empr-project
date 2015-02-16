@@ -74,7 +74,6 @@ void main() {
 
     set_voice(voice_1);
     SysTick_Config(2400);
-    int i;
 
     while (1);
 }
