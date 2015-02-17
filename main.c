@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdio.h>
+
 #include "LPC17xx.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_can.h"
@@ -6,17 +9,37 @@
 #include "UART/uart.h"
 #include "SYNTH/oscillator.h"
 #include "SYNTH/synth.h"
+#include "MIDI/midi.h"
 
+int debug = 1;
 CAN_MSG_Type RXMsg;
-struct Voice voice_1;
+struct CAN_return_data message;
+
+#define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
+#define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 
 void CAN_IRQHandler(void) {
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
 
-    if((IntStatus>>0)&0x01)
-    {
+    if((IntStatus>>0)&0x01) {
         CAN_ReceiveMsg(LPC_CAN2, &RXMsg);
-        if(RXMsg.len == 0) { 
+        interpret_message(&RXMsg, 1, &message);
+
+        if (message.done) {
+            debug_print_nnl(message.text_data.track, strlen(message.text_data.track));
+            debug_print_nnl(message.text_data.bpm, strlen(message.text_data.bpm));
+                
+            int i;
+            for (i=0; i<15; i++) {
+                char setup[10];
+                sprintf(setup, "%d: ", i);
+                debug_print_nnl(setup, strlen(setup));
+                debug_print_nnl(message.text_data.channel[i], strlen(message.text_data.channel[i]));
+            }
+            message.done = 0;
+        }
+
+        if (RXMsg.len == 0) { 
             //write_serial("Received text S/E\n\r", 19);
         } else if (RXMsg.len == 5) {
             uint8_t channel = RXMsg.dataA[0];
@@ -30,12 +53,9 @@ void CAN_IRQHandler(void) {
                 } else {
                     note_on(get_freq(note));
                 }
+
             }
-        } else if(RXMsg.len == 8) {
-            //write_serial("Received text\r\n", 15);
-        } else {
-            //write_serial("WTF\r\n", 5); 
-        }   
+        }
     }
 }
 
@@ -68,7 +88,6 @@ void main() {
 
     set_voice(voice_1);
     SysTick_Config(2400);
-    int i;
 
     while (1);
 }
