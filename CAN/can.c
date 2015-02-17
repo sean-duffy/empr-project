@@ -63,7 +63,7 @@ void init_can(uint32_t baud_rate, short unsigned int debug_flag) {
     CAN_SetAFMode(LPC_CANAF, CAN_AccBP); //accept all traffic on init
     debug_print("CAN Initialised", 15);
 
-    CAN_InitMessage();
+    CAN_init_message();
     LPC_GPIO0->FIODIR |= (1 << 10);
  
     CAN_IRQCmd(LPC_CAN2, CANINT_RIE, ENABLE);
@@ -86,33 +86,4 @@ void disable_interrupt() {
     CAN_IRQCmd(LPC_CAN2, CANINT_RIE, DISABLE);
     NVIC_DisableIRQ(CAN_IRQn);
     debug_print("CAN interrupts disabled", 23);
-}
-
-void set_device_id(uint32_t id) {
-    AF_SectionDef AFTable;
-    FullCAN_Entry FullCAN_Table [1];
-    SFF_Entry SFF_Table [1];
-    SFF_GPR_Entry SFF_GPR_Table [1];
-    EFF_Entry EFF_Table [1];
-    EFF_GPR_Entry EFF_GPR_Table [1];
-    
-    CAN_SetAFMode(LPC_CAN2, CAN_AccOff); //turn off filter for setting, accept no messages
-    
-    EFF_Table[0].controller = CAN2_CTRL;
-    EFF_Table[0].ID_29 = id;
-    
-    //set all the start registers to the address of the start of their respective tables, and set how many entries each has
-    AFTable.FullCAN_Sec = &FullCAN_Table[0];
-    AFTable.FC_NumEntry = 0;
-    AFTable.SFF_Sec = &SFF_Table[0];
-    AFTable.SFF_NumEntry = 0;
-    AFTable.SFF_GPR_Sec = &SFF_Table[0];//&SFF_GPR_Table[0]; //documentation says to do this when table is empty
-    AFTable.SFF_GPR_NumEntry = 0;
-    AFTable.EFF_Sec = &EFF_Table[0];
-    AFTable.EFF_NumEntry = 1;
-    AFTable.EFF_GPR_Sec = &EFF_Table[0];//&EFF_GPR_Table[0];
-    AFTable.EFF_GPR_NumEntry = 0;    
-    
-    CAN_SetAFMode(LPC_CAN2, CAN_eFCAN);
-    debug_print("Set CAN Acceptance Filter", 25);
 }
