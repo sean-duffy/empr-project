@@ -13,10 +13,17 @@
 
 int debug = 1;
 CAN_MSG_Type RXMsg;
+<<<<<<< HEAD
 struct CAN_return_data message;
 
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
+||||||| merged common ancestors
+struct Voice voice_1;
+=======
+struct Voice voice_1;
+uint8_t channel_playing = 1;
+>>>>>>> voices
 
 void CAN_IRQHandler(void) {
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
@@ -47,7 +54,7 @@ void CAN_IRQHandler(void) {
             uint8_t volume = RXMsg.dataA[2];
             uint8_t type = RXMsg.dataA[3];
             uint8_t control = RXMsg.dataB[0];
-            if (channel == 1) {
+            if (channel == channel_playing) {
                 if (volume == 0) {
                     note_off();
                 } else {
@@ -68,20 +75,26 @@ void CAN_InitMessage(void) {
     RXMsg.dataB[0] = RXMsg.dataA[1] = RXMsg.dataA[2] = RXMsg.dataA[3] = 0x00000000;
 }
 
+
+
 void main() {
     int resolution = 360;
     set_resolution(resolution);
  
-    double wave_buf[resolution];
-    generate_sawtooth(wave_buf, resolution);
+    double wave_buf_1[resolution];
+    generate_sawtooth(wave_buf_1, resolution);
 
-    voice_1.osc_1_buf = wave_buf;
+    double wave_buf_2[resolution];
+    generate_square(wave_buf_2, resolution);
+
+    voice_1.osc_1_buf = wave_buf_1;
     voice_1.osc_1_mix = 0.5;
-    voice_1.osc_1_attack = 0.5;
-    voice_1.osc_1_release = 0.8;
-    voice_1.osc_2_buf = wave_buf;
-    voice_1.osc_2_mix = 0;
+    voice_1.osc_2_buf = wave_buf_2;
+    voice_1.osc_2_mix = 0.5;
     voice_1.osc_2_detune = 0;
+    voice_1.output_attack = 1;
+    voice_1.output_release = 0.8;
+    voice_1.envelope_on = 0;
 
     init_dac();
     init_can(250000, 0);
