@@ -28,10 +28,10 @@ void CAN_IRQHandler(void)
             debug_print_nnl(message.text_data.bpm, strlen(message.text_data.bpm));
                 
             int i;
-            for(i=0; i<15; i++){
-		char setup[10];
-		sprintf(setup, "%d: ", i);
-		debug_print_nnl(setup, strlen(setup));
+            for (i=0; i<15; i++) {
+                char setup[10];
+                sprintf(setup, "%d: ", i);
+                debug_print_nnl(setup, strlen(setup));
                 debug_print_nnl(message.text_data.channel[i], strlen(message.text_data.channel[i]));
             }
             message.done = 0;

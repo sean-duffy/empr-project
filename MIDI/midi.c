@@ -5,32 +5,26 @@
 #include "midi.h"
 #include "UART/uart.h"
 #include <string.h>
+#include <stdlib.h>
 
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 
-void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN_return_data *ret)
-{
-
+void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN_return_data *ret) {
     static uint8_t count = 0;
     static char concat[100];
     int i;
 
-    if(received_message->len == 0)
-    {
-        if ((received_message->id >> 25) == 1)
-        {
-	    //Start packet
-            if(count == 0){ 
+    if (received_message->len == 0) {
+        if ((received_message->id >> 25) == 1) {
+        //Start packet
+            if(count == 0) { 
                 ret->done = 0;
             }
 
             memset(concat, 0, 100);
             concat[0] = '\0';
-        } 
-
-        else if ((received_message->id >> 24) == 1)
-        {
-       	    //End packet
+        } else if ((received_message->id >> 24) == 1) {
+               //End packet
             count ++;
             i = strlen(concat);
             concat[i] = '\n';
@@ -52,7 +46,7 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
                 }
             } 
 
-            if(count==18){
+            if(count==18) {
                 char temp[100];
                 strcpy(temp, (ret->text_data.track) + 50);
                 strcpy(ret->text_data.track, temp);
@@ -62,30 +56,23 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
             }
         
         }      
-    }
-
-    else if (received_message->len == 5)
-    {
+    } else if (received_message->len == 5) {
         //music data return
-	debug_print_nnl(".",2);
         ret->midi_data.channel = received_message->dataA[0];
         ret->midi_data.note = received_message->dataA[1];
         ret->midi_data.volume = received_message->dataA[2];
         ret->midi_data.type = received_message->dataA[3];
         ret->midi_data.control = received_message->dataB[0];
-    }
-
-    else if(received_message->len == 8)
-    {
+    } else if (received_message->len == 8) {
         // Text data packet
-	char packet_c[8];
+        char packet_c[8];
 
-	for(i = 0; i < 4; i++){
-	    packet_c[i] = (char) received_message->dataA[i];
-    	}
+        for(i = 0; i < 4; i++) {
+            packet_c[i] = (char) received_message->dataA[i];
+        }
 
-        for(i = 0; i < 4; i++){
-	    packet_c[4+i] = (char) received_message->dataB[i];
+        for(i = 0; i < 4; i++) {
+            packet_c[4+i] = (char) received_message->dataB[i];
         }
 
         strcat(concat, packet_c);
