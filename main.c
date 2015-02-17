@@ -41,9 +41,7 @@ void CAN_IRQHandler(void) {
             message.done = 0;
         }
 
-        if (RXMsg.len == 0) { 
-            //write_serial("Received text S/E\n\r", 19);
-        } else if (RXMsg.len == 5) {
+        if (RXMsg.len == 5) {
             uint8_t channel = RXMsg.dataA[0];
             uint8_t note = RXMsg.dataA[1];
             uint8_t volume = RXMsg.dataA[2];
@@ -55,7 +53,6 @@ void CAN_IRQHandler(void) {
                 } else {
                     note_on(get_freq(note));
                 }
-
             }
         }
     }
