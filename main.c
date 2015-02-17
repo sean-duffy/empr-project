@@ -13,17 +13,12 @@
 
 int debug = 1;
 CAN_MSG_Type RXMsg;
-<<<<<<< HEAD
 struct CAN_return_data message;
 
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
-||||||| merged common ancestors
-struct Voice voice_1;
-=======
 struct Voice voice_1;
 uint8_t channel_playing = 1;
->>>>>>> voices
 
 void CAN_IRQHandler(void) {
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
@@ -65,17 +60,6 @@ void CAN_IRQHandler(void) {
         }
     }
 }
-
-void CAN_InitMessage(void) {
-    RXMsg.format = 0x00;
-    RXMsg.id = 0x00;
-    RXMsg.len = 0x00;
-    RXMsg.type = 0x00;
-    RXMsg.dataA[0] = RXMsg.dataA[1] = RXMsg.dataA[2] = RXMsg.dataA[3] = 0x00000000;
-    RXMsg.dataB[0] = RXMsg.dataA[1] = RXMsg.dataA[2] = RXMsg.dataA[3] = 0x00000000;
-}
-
-
 
 void main() {
     int resolution = 360;
