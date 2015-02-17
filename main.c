@@ -1,12 +1,14 @@
+#include <string.h>
+#include <stdio.h>
+
 #include "LPC17xx.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_can.h"
 
-
 #include "CAN/can.h"
 #include "UART/uart.h"
 #include "MIDI/midi.h"
-#include <string.h>
+
 int debug = 1;
 CAN_MSG_Type RXMsg;
 struct CAN_return_data message;

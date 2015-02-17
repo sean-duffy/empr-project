@@ -24,7 +24,7 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
             memset(concat, 0, 100);
             concat[0] = '\0';
         } else if ((received_message->id >> 24) == 1) {
-               //End packet
+            //End packet
             count ++;
             i = strlen(concat);
             concat[i] = '\n';
@@ -56,8 +56,10 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
             }
         
         }      
+
     } else if (received_message->len == 5) {
         //music data return
+
         ret->midi_data.channel = received_message->dataA[0];
         ret->midi_data.note = received_message->dataA[1];
         ret->midi_data.volume = received_message->dataA[2];
