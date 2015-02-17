@@ -54,12 +54,16 @@ void SysTick_Handler(void) {
         osc_1_tick = 0;
     }
 
+    if (osc_2_tick >= resolution) {
+        osc_2_tick = 0;
+    }
+
     //if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
     //    mix_inc *= -1;
     //}
 
     osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
-    osc_2_value = osc_2_buf[(int) floor(osc_1_tick)];
+    osc_2_value = osc_2_buf[(int) floor(osc_2_tick)];
 
     if (output_envelope < 0) {
         output_envelope = 0;
@@ -69,17 +73,19 @@ void SysTick_Handler(void) {
     output_value = (int) floor((osc_mix + 1.0) * 300);
 
     DAC_UpdateValue(LPC_DAC, output_value * note_mute);
-    osc_1_tick += osc_1_inc;
 
     // Attack
-    if (output_envelope < 1 && released == 0) {
+    if (output_envelope < 1 && released == 0 && envelope_on) {
         output_envelope += output_attack_inc;
     }
 
     // Release
-    if (output_envelope > 0 && released == 1) {
+    if (output_envelope > 0 && released == 1 && envelope_on) {
         output_envelope += output_release_inc;
     }
+
+    osc_1_tick += osc_1_inc;
+    osc_2_tick += osc_2_inc;
 
     //osc_1_mix += mix_inc;
     //osc_2_mix -= mix_inc;
