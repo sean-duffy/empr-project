@@ -11,6 +11,7 @@
 #include "UART/uart.h"
 #include "SYNTH/oscillator.h"
 #include "SYNTH/synth.h"
+#include "SYNTH/instruments.h"
 #include "MIDI/midi.h"
 
 #include "I2C/i2c.h"
@@ -61,23 +62,28 @@ void CAN_IRQHandler(void) {
 }
 
 void main() {
-    int resolution = 360;
-    set_resolution(resolution);
+    // for debug to work ->> serial_init();
+    
+    set_resolution(360);
  
+    /*
     double wave_buf_1[resolution];
-    generate_sawtooth(wave_buf_1, resolution);
-
+    generate_triangle(wave_buf_1, resolution);
+    
     double wave_buf_2[resolution];
-    generate_square(wave_buf_2, resolution);
+    generate_noise(wave_buf_2, resolution);
+
+    low_pass_filter(wave_buf_1, resolution, 8);
+    low_pass_filter(wave_buf_2, resolution, 8);
 
     voice_1.osc_1_buf = wave_buf_1;
-    voice_1.osc_1_mix = 0.5;
+    voice_1.osc_1_mix = 0.8;
     voice_1.osc_2_buf = wave_buf_2;
-    voice_1.osc_2_mix = 0.5;
+    voice_1.osc_2_mix = 0.2;
     voice_1.osc_2_detune = 0;
-    voice_1.output_attack = 1;
+    voice_1.output_attack = 0.8;
     voice_1.output_release = 0.8;
-    voice_1.envelope_on = 0;
+    voice_1.envelope_on = 1;
 
 	i2cInit(LPC_I2C1, 100000);
 	lcdInit(LPC_I2C1, LCDAddr, 0);
@@ -85,8 +91,9 @@ void main() {
 
     init_dac();
     init_can(250000, 0);
+    */
 
-    set_voice(voice_1);
+    set_voice(eggs);
     SysTick_Config(2400);
 
     sprintf(status_string, "Chan: %2d  Vol: %d", channel_playing, output_volume);
