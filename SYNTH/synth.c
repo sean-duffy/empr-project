@@ -121,7 +121,7 @@ void init_dac(void) {
 
 void note_on(double freq) {
     released = 0;
-    osc_1_inc = 0.00858141 * freq;
+    osc_1_inc = 0.00974999 * freq; // Bit rate callibrated to middle C
     osc_2_inc = osc_1_inc;
 
     if (envelope_on) {
