@@ -55,6 +55,7 @@ void CAN_IRQHandler(void) {
                     note_on(get_freq(message.midi_data.note));
                 }
             }
+            message.is_midi = 0;
         }
     }
 }
