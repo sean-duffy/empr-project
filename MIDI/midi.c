@@ -48,10 +48,11 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
 
             if(count==18) {
                 char temp[100];
-                strcpy(temp, (ret->text_data.track) + 50);
+                strcpy(temp, (ret->text_data.track) + 52);
                 strcpy(ret->text_data.track, temp);
 
                 ret->done = 1;
+                ret->is_midi = 0;
                 count = 0;
             }
         
@@ -65,6 +66,7 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
         ret->midi_data.volume = received_message->dataA[2];
         ret->midi_data.type = received_message->dataA[3];
         ret->midi_data.control = received_message->dataB[0];
+        ret->is_midi = 1;
     } else if (received_message->len == 8) {
         // Text data packet
         char packet_c[8];
