@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 
 // Wave functions
 double point_sine(double point, double offset) {
@@ -29,9 +30,21 @@ double point_triangle(double point, double offset) {
     }
 }
 
+double point_rand(){
+    return (float) (rand()%100)/100.0;
+}
+
 // Buffer generators
-void generate_sine(double *buf, int res) {
+
+void generate_noise(double *buf, int res) {
     int i;
+    for (i = 0; i < res; i++) {
+        buf[i] = point_rand();
+    }
+}
+
+void generate_sine(double *buf, int res) {
+    int i, x;
     for (i = 0; i < res; i++) {
         buf[i] = point_sine((double) i/ res, 0);
     }

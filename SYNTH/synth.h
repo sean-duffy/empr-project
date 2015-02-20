@@ -12,6 +12,8 @@
 #ifndef VOICE_STRUCT_GUARD
 #define VOICE_STRUCT_GUARD
 
+#define RESOLUTION 360 
+
 struct Voice {
     double *osc_1_buf;
     double osc_1_mix;
