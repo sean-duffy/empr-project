@@ -47,17 +47,12 @@ void CAN_IRQHandler(void) {
             message.done = 0;
         }
 
-        if (RXMsg.len == 5) {
-            uint8_t channel = RXMsg.dataA[0];
-            uint8_t note = RXMsg.dataA[1];
-            uint8_t volume = RXMsg.dataA[2];
-            uint8_t type = RXMsg.dataA[3];
-            uint8_t control = RXMsg.dataB[0];
-            if (channel == channel_playing) {
-                if (volume == 0) {
+        if (message.is_midi) {
+            if (message.midi_data.channel == channel_playing) {
+                if (message.midi_data.volume == 0) {
                     note_off();
                 } else {
-                    note_on(get_freq(note));
+                    note_on(get_freq(message.midi_data.note));
                 }
             }
         }
@@ -92,8 +87,6 @@ void main() {
 
     set_voice(voice_1);
     SysTick_Config(2400);
-
-    write_serial("loaded\n\r", 9);
 
     sprintf(status_string, "Chan: %2d  Vol: %d", channel_playing, output_volume);
     staticPrintSecondLine(LPC_I2C1, LCDAddr, status_string);
