@@ -1,9 +1,4 @@
 #include "instruments.h"
-#include "../UART/uart.h"
-#include <string.h>
-
-#define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
-#define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 
 // voice initialisers go here ...
 
