@@ -82,7 +82,7 @@ void SysTick_Handler(void) {
     }
 
     //osc_mix = ((double) output_volume / 10.0) * (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
-    osc_mix = (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
+    osc_mix = output_envelope * (osc_1_value*osc_1_mix+ osc_2_value*osc_2_mix);
     output_value = (int) floor((osc_mix + 1.0) * 300);
 
     DAC_UpdateValue(LPC_DAC, output_value * note_mute);
