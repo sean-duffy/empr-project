@@ -4,8 +4,6 @@
 #include "../I2C/i2c.h"
 #include "lcd.h"
 
-
-
 void lcdPrintChar(LPC_I2C_TypeDef* i2cPort, uint8_t addr, uint8_t data)
 {
     uint8_t val[] = {0x40, data};
@@ -228,8 +226,12 @@ void scrollAndPrintFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
         int flagValLength = sprintf(flagVal, "Value: %x\r\n", bacVal);
         write_usb_serial_blocking(flagVal, flagValLength);*/
 
-        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(firstLineText[currPos++]));
-        charsPrinted++;
+        int next_char = mapCharToLcdInt(firstLineText[currPos++]);
+        if (next_char < 122 || next_char > 154) {
+            lcdPrintChar(i2cPort, addr, next_char);
+            charsPrinted++;
+        }
+
     }
 
     firstLinePos++;

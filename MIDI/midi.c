@@ -48,7 +48,7 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
 
             if(count==18) {
                 char temp[100];
-                strcpy(temp, (ret->text_data.track) + 50);
+                strcpy(temp, (ret->text_data.track) + 52);
                 strcpy(ret->text_data.track, temp);
 
                 ret->done = 1;

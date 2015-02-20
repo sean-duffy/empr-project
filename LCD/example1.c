@@ -3,7 +3,6 @@
 #include "lpc17xx_i2c.h"
 
 #include "lcd.h"
-#include "../I2C/i2c.h"
 
 const char* testStr = "                The CAN Based Music Streaming System of the Decade";
 const char* testStr2 = "                Jashan Bhoora";

@@ -33,3 +33,6 @@ void set_voice(struct Voice voice);
 double get_freq(int key_n);
 void note_on(double freq);
 void note_off(void);
+
+int scroll_counter;
+int output_volume;

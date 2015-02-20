@@ -11,6 +11,7 @@
 
 #include "oscillator.h"
 #include "synth.h"
+#include "LCD/lcd.h"
 
 int duration_passed = 0;
 int resolution;
@@ -47,6 +48,10 @@ double mix_inc = 0.00002;
 
 double osc_mix;
 
+int scroll_counter = 0;
+
+int output_volume = 9;
+
 void SysTick_Handler(void) {
     double output_value;
 
@@ -56,6 +61,13 @@ void SysTick_Handler(void) {
 
     if (osc_2_tick >= resolution) {
         osc_2_tick = 0;
+    }
+
+    if (scroll_counter > 10000) {
+        scroll_counter = 0;
+        scrollAndPrintFirstLine(LPC_I2C1, LCDAddr);
+    } else {
+        scroll_counter++;
     }
 
     //if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
@@ -69,7 +81,8 @@ void SysTick_Handler(void) {
         output_envelope = 0;
     }
 
-    osc_mix = osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix;
+    //osc_mix = ((double) output_volume / 10.0) * (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
+    osc_mix = (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
     output_value = (int) floor((osc_mix + 1.0) * 300);
 
     DAC_UpdateValue(LPC_DAC, output_value * note_mute);
