@@ -11,6 +11,7 @@
 
 #include "oscillator.h"
 #include "synth.h"
+#include "../STATEMACHINE/statemachine.h"
 
 int duration_passed = 0;
 int resolution;
@@ -69,6 +70,7 @@ void SysTick_Handler(void) {
         output_envelope = 0;
     }
 
+    //osc_mix = ((double) getVolume() / 5.0 ) * (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
     osc_mix = osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix;
     output_value = (int) floor((osc_mix + 1.0) * 300);
 

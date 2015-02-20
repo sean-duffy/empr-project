@@ -10,14 +10,19 @@
 #include "SYNTH/oscillator.h"
 #include "SYNTH/synth.h"
 #include "MIDI/midi.h"
+#include "I2C/i2c.h"
+#include "LCD/lcd.h"
+#include "KEYPAD/keypad.h"
+#include "STATEMACHINE/statemachine.h"
 
 int debug = 1;
 CAN_MSG_Type RXMsg;
 struct CAN_return_data message;
+int screenWritten = 0;
 
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
-struct Voice voice_1;
+
 uint8_t channel_playing = 1;
 
 void CAN_IRQHandler(void) {
@@ -58,30 +63,137 @@ void CAN_IRQHandler(void) {
     }
 }
 
-void main() {
-    int resolution = 360;
-    set_resolution(resolution);
- 
-    double wave_buf_1[resolution];
-    generate_sawtooth(wave_buf_1, resolution);
+extern void EINT3_IRQHandler()
+{
+    //keypadDisableInterrupt();
+	char readChar = keypadRead(LPC_I2C1, keypadAddr);
+	
+	if(readChar != '\0')
+	{
+        
+        int currState = getCurrentState();
+        
+        if(readChar == 'D') //return to default
+        {
+            setCurrentState(0);
+            screenWritten = 0;
+            return;
+        }
 
-    double wave_buf_2[resolution];
-    generate_square(wave_buf_2, resolution);
+		else if(currState == 0 && (readChar == '*' || readChar == '#')) //default to vol change
+        {
+            setCurrentState(1);
+            screenWritten = 0;
+            return;
+        }
+        
+        else if(currState == 1 && (readChar == '*' || readChar == '#')) //actually change vol
+        {
+            int temp = getVolume();
+            char outp[8];
+            if(readChar == '*')
+            {
+                setVolume(temp - 1);
+            }
 
-    voice_1.osc_1_buf = wave_buf_1;
-    voice_1.osc_1_mix = 0.5;
-    voice_1.osc_2_buf = wave_buf_2;
-    voice_1.osc_2_mix = 0.5;
-    voice_1.osc_2_detune = 0;
-    voice_1.output_attack = 1;
-    voice_1.output_release = 0.8;
-    voice_1.envelope_on = 0;
+            else
+            {
+                setVolume(temp + 1);
+            }
+            //resetStateTimeout();
+            sprintf(outp, "%d", getVolume());
+            staticPrintSecondLine(LPC_I2C1, LCDAddr, outp);
+            
+            return;
+        }
+        
+        else if(currState == 0 && readChar == 'C') //default to channel change
+        {
+            setCurrentState(2);
+            //start state timeout here
+            return;
+        }
 
-    init_dac();
-    init_can(250000, 0);
+        else if(currState == 2 && readChar == ('0' || '1')) //read first digit
+        {
+            setFirstNewChannelDigit(readChar == '0' ? 0 : 1);
+            setCurrentState(3);
+            //reset state timeout here
+            return;
+        }
 
-    set_voice(voice_1);
-    SysTick_Config(2400);
+        else if(currState == 3 && readChar == ('0' || '1' || '2' || '3' || '4' || '5' || '6' || '7' || '8' || '9')) //read second digit, apply then return to default
+        {
+            setSecondNewChannelDigit(readChar - '0');
+            writeNewChannel();
+            setCurrentState(0);
+            //cancel state timeout here
+            return;
+        }
 
-    while (1);
+        else if(currState == 0 && readChar == 'A') //default to change voice state
+        {
+            setCurrentState(4);
+            //start state timeout here
+            return;
+        }
+
+
+
+        
+        //setLastReadChar(readChar);
+	}
+    
+    //reset keypad state
+	uint8_t data[] = {0b00001111};	
+	i2cWrite(LPC_I2C1, keypadAddr, data, 1);
+	GPIO_ClearInt(0, 0x00800000);
+    //keypadInitInterrupt();
+}
+
+void main() {  
+    initialise_system();
+    write_serial("Loaded\n\r", 8);
+    int cs = 0;
+    while (1)
+    {   
+        cs = getCurrentState();
+        write_serial("looping\n\r", 9);
+        if(cs == 0)
+        {
+            //continue; //synth systick manages printing to screen?
+            if(!screenWritten)
+            {
+                //clearFirstLine(LPC_I2C1, LCDAddr);
+                staticPrintFirstLine(LPC_I2C1, LCDAddr, "Default State"); 
+                char secLine[17];
+                sprintf(secLine, "Chan: %d   Vol: %d", getChannel(), getVolume());
+                staticPrintSecondLine(LPC_I2C1, LCDAddr, secLine);
+                screenWritten = 1;
+            }
+        }
+
+        else if(cs == 1)
+        {
+            if(!screenWritten)
+            {
+                //print latest current volume values to screen instead of default
+                //clearFirstLine(LPC_I2C1, LCDAddr);
+                staticPrintFirstLine(LPC_I2C1, LCDAddr, "Volume State");
+                screenWritten = 1;
+            }
+        }
+
+        else if(cs == 2)
+        {
+            if(!screenWritten)
+            {
+                //print channel change display
+                //clearFirstLine(LPC_I2C1, LCDAddr);
+                staticPrintFirstLine(LPC_I2C1, LCDAddr, "Channel State");
+                screenWritten = 1;
+            }
+        }
+        
+    }
 }

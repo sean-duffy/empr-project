@@ -1,18 +1,25 @@
 #include "LPC17xx.h"
-#include "i2clib.h"
-#include "keypadlib.h"
-#include "lcdlib.h"
 #include "lpc_types.h"
 #include "lpc17xx_i2c.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_gpio.h"
 
+#include "../I2C/i2c.h"
+#include "../KEYPAD/keypad.h"
+#include "../LCD/lcd.h"
+
+
 #define noOfElements(x) (sizeof(x) / sizeof(x[0]))
 
-void keypadInitInterrupt(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
+void keypadInitInterrupt()
 {	
 	GPIO_IntCmd(0, 0x00800000, 1); //port zero, bit 23 mask, falling edge
 	NVIC_EnableIRQ(EINT3_IRQn);
+}
+
+void keypadDisableInterrupt()
+{	
+	NVIC_DisableIRQ(EINT3_IRQn);
 }
 
 void keypadInit(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
@@ -28,19 +35,11 @@ void keypadInit(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
 	PinCfg.Portnum = 0;
 	PinCfg.Pinnum = 9; 
 	PINSEL_ConfigPin(&PinCfg);
-
 	//set up pins as we want them
 	uint8_t data[] = {0b00001111};	
 	i2cWrite(LPC_I2C1, keypadAddr, data, noOfElements(data));
-
 	keypadInitInterrupt(i2cPort, addr);
 
-}
-
-
-void keypadWrite(LPC_I2C_TypeDef* i2cPort, uint8_t addr, uint8_t data[])
-{
-	
 }
 
 char keypadRead(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
