@@ -23,7 +23,6 @@ struct CAN_return_data message;
 
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
-struct Voice voice_1;
 uint8_t channel_playing = 2;
 char status_string[16];
 char *first_line;
@@ -87,8 +86,4 @@ void main() {
     staticPrintSecondLine(LPC_I2C1, LCDAddr, status_string);
 
     while (1);
-
-
-
-
 }
