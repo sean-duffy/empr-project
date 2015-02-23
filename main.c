@@ -24,7 +24,7 @@ struct CAN_return_data message;
 
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
-uint8_t channel_playing = 2;
+uint8_t channel_playing = 1;
 char status_string[16];
 char *first_line;
 char space_string[] = "                ";
@@ -73,6 +73,12 @@ extern void EINT3_IRQHandler() {
         output_volume += 0.1;
     } else if (readChar == '*' && output_volume > 0.1) {
         output_volume -= 0.1;
+    }
+
+    if (readChar == '9' && channel_playing < 15) {
+        channel_playing += 1;
+    } else if (readChar == '7' && channel_playing > 1) {
+        channel_playing -= 1;
     }
 
     sprintf(status_string, "Chan: %2d  Vol: %f", channel_playing, output_volume * 10.0);

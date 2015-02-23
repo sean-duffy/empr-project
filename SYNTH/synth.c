@@ -63,7 +63,7 @@ void SysTick_Handler(void) {
         osc_2_tick = 0;
     }
 
-    if (scroll_counter > 20000) {
+    if (scroll_counter > 30000) {
         scroll_counter = 0;
         scrollAndPrintFirstLine(LPC_I2C1, LCDAddr);
     } else {
