@@ -1,3 +1,6 @@
+#ifndef OSCILLATOR_STRUCT_GUARD
+#define OSCILLATOR_STRUCT_GUARD
+
 #include <math.h>
 
 double point_sine(double point, double offset);
@@ -13,3 +16,5 @@ void generate_triangle(double *buf, int res);
 void generate_noise(double *buf, int res);
 
 void low_pass_filter(double *buf, int buflen, int n);
+
+#endif
