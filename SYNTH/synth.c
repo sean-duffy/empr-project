@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "lpc_types.h"
 #include "lpc17xx_pinsel.h"
@@ -43,14 +44,12 @@ double osc_3_value = 0;
 double osc_3_mix;
 
 int note_mute = 1;
-
 double mix_inc = 0.00002;
-
 double osc_mix;
+double output_volume = 0.9;
 
 int scroll_counter = 0;
-
-double output_volume = 0.9;
+char *first_line;
 
 void SysTick_Handler(void) {
     double output_value;
@@ -65,7 +64,7 @@ void SysTick_Handler(void) {
 
     if (scroll_counter > 30000) {
         scroll_counter = 0;
-        scrollAndPrintFirstLine(LPC_I2C1, LCDAddr);
+        scroll_first_line(&I2CConfigStruct, first_line, strlen(first_line));
     } else {
         scroll_counter++;
     }

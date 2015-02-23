@@ -38,3 +38,5 @@ void note_off(void);
 
 int scroll_counter;
 double output_volume;
+
+char *first_line;

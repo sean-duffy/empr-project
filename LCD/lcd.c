@@ -1,164 +1,17 @@
-#include "LPC17xx.h"
-#include "lpc_types.h"
+#include <string.h>
+#include <stdio.h>
+#include "lpc17xx_gpio.h"
 #include "lpc17xx_i2c.h"
+#include "lpc_types.h"
+#include "lpc17xx_pinsel.h"
+#include "LPC17xx.h"
 #include "../I2C/i2c.h"
-#include "lcd.h"
 
-void lcdPrintChar(LPC_I2C_TypeDef* i2cPort, uint8_t addr, uint8_t data)
-{
-    uint8_t val[] = {0x40, data};
-    i2cWrite(i2cPort, addr, val, 2);
-}
+int first_line_scroll_i = 0;
+int second_line_scroll_i = 0;
+I2C_M_SETUP_Type I2CConfigStruct;
 
-void lcdWrite(LPC_I2C_TypeDef* i2cPort, uint8_t addr, uint8_t data)
-{
-    uint8_t val[] = {0x00, data};
-    i2cWrite(i2cPort, addr, val, 2);
-}
-
-void delay(int multiplier)
-{
-    int i;
-    for(i = 0 ; i < 96000 * multiplier ; i++);
-}
-
-void lcdInit(LPC_I2C_TypeDef* i2cPort, uint8_t addr, uint8_t displayCursor)
-{
-    lcdWrite(i2cPort, addr, 0x35); //function set - 2 lines, no shift?, 
-    isBusyWait(i2cPort, addr);
-    //delay(2);
-
-    lcdWrite(i2cPort, addr, 0x9F); //sets vlcd
-    isBusyWait(i2cPort, addr);
-    //delay(2);
-
-    lcdWrite(i2cPort, addr, 0x34); //function set 2 lines
-    isBusyWait(i2cPort, addr);
-    //delay(2);
-
-    //lcdWrite(i2cPort, addr, 0x07); //shift settings
-    //isBusyWait(i2cPort, addr);
-    //delay(2);
-
-    if(displayCursor)
-    {
-        lcdWrite(i2cPort, addr, 0x0F); //as above, but cursor and blink on
-        isBusyWait(i2cPort, addr);
-        //delay(2);
-    }
-    else
-    {
-        lcdWrite(i2cPort, addr, 0x0C); //display control - sets display on, sets cursor off, and sets cursor blink off
-    }
-    
-    lcdWrite(i2cPort, addr, 0x02); //move cursor to home (external code can use method for this)
-    isBusyWait(i2cPort, addr);
-    //delay(2);    
-
-    clearDisplay(i2cPort, addr);
-}
-
-void clearDisplay(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    lcdWrite(i2cPort, addr, 0x01);
-
-    /*char flagVal[30];
-    int bacVal = readBACRegister(i2cPort, addr) & 0x80;
-    int flagValLength = sprintf(flagVal, "Value: %x\r\n", bacVal);
-    write_usb_serial_blocking(flagVal, flagValLength);*/
-
-    isBusyWait(i2cPort, addr);
-
-}
-
-void resetCursor(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    lcdWrite(i2cPort, addr, 0x02);
-    isBusyWait(i2cPort, addr);
-}
-
-void writeMessage(LPC_I2C_TypeDef* i2cPort, uint8_t addr, char* message, int blankSecondLine)
-{
-    int i = 0;
-    //resetCursor(i2cPort, addr);
-    clearDisplay(i2cPort, addr);
-    while(message[i] != '\0')
-    {
-        /*char flagVal[30];
-        int bacVal = readAddressCounter(i2cPort, addr);
-        int flagValLength = sprintf(flagVal, "Value: %x\r\n", bacVal);
-        write_usb_serial_blocking(flagVal, flagValLength);*/
-        if(i == 16 && !blankSecondLine)
-        {    
-            //set DDRAM to second line
-            lcdWrite(i2cPort, addr, 0xC0);
-        }
-        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(message[i]));
-        i++;
-    }
-
-    if(sizeof(message) < 32)
-    {
-        while(i < 32)
-        {
-            if(i == 16)
-            {    
-                //set DDRAM to second line
-                lcdWrite(i2cPort, addr, 0xC0);
-            }
-
-            lcdPrintChar(i2cPort, addr, mapCharToLcdInt(' '));
-            i++;
-        }
-    }
-}
-
-void enableDisplay(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    lcdWrite(i2cPort, addr, 0x0F);
-    isBusyWait(i2cPort, addr);
-}
-
-void targetDDRAMZero(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    lcdWrite(i2cPort, addr, 0x80);
-    isBusyWait(i2cPort, addr);
-}
-
-void setDDRAMAddress(LPC_I2C_TypeDef* i2cPort, uint8_t addr, uint8_t targetAddr)
-{
-    lcdWrite(i2cPort, addr, targetAddr);
-    isBusyWait(i2cPort, addr);
-}
-
-
-#define EXCLAM 0b10100001
-#define QUOTE EXCLAM+1
-#define HASH EXCLAM+2
-#define PERCENT EXCLAM+4
-#define AMP EXCLAM+5
-#define SQUOTE EXCLAM+6
-#define LBRAC EXCLAM+7
-#define RBRAC EXCLAM+8
-#define AST EXCLAM+9
-#define PLUS EXCLAM+10
-#define COMMA EXCLAM+11
-#define MINUS EXCLAM+12
-#define DOT EXCLAM+13
-#define SLASH EXCLAM+14
-
-#define EQUALS 0b10111101
-
-#define LOWERCASESTART 0b11100001 //(a)
-
-#define UPPERCASESTART 0b11000001 //(A)
-
-#define NUMBERSTART 0b10110000 //(0)
-
-#define SPACE 0b10100000 //( )
-
-int mapCharToLcdInt(char c)
-{
+int map_char(char c) {
     if (c == '#') {
         return 19;
     } else if (c == '_') {
@@ -170,167 +23,74 @@ int mapCharToLcdInt(char c)
     }
 }
 
-uint8_t readBACRegister(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
+uint8_t readBACRegister(LPC_I2C_TypeDef* i2cPort, uint8_t addr) {
     uint8_t result[1];
-    i2cRead(i2cPort, addr, NULL, 0, result, 1);    
-    
+    i2cRead(i2cPort, addr, NULL, 0, result, 1);
     return result[0];
 }
 
-void isBusyWait(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    //delay(5);
-    /*int i;
-    while((i = readBACRegister(i2cPort, addr)) & 0x80)
-    {
-        char flagVal[30];
-        //int bacVal = readBACRegister(i2cPort, addr);
-        int flagValLength = sprintf(flagVal, "Busy Value: %x\r\n", (i & 0x80));
-        write_usb_serial_blocking(flagVal, flagValLength);
-    }*/
-
+void isBusyWait(LPC_I2C_TypeDef* i2cPort, uint8_t addr) {
     while(readBACRegister(i2cPort, addr) & 0x80);
-    //delay(2);
 }
 
-uint8_t readAddressCounter(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    return (readBACRegister(i2cPort, addr) & 0x7F);
+void init_i2c(void) {
+    PINSEL_CFG_Type PinCfg; // declare data struct with param members
+    PinCfg.OpenDrain = 0;
+    PinCfg.Pinmode = 0;
+    PinCfg.Funcnum = 3;
+    PinCfg.Pinnum = 0;
+    PinCfg.Portnum = 0;
+    PINSEL_ConfigPin(&PinCfg); // configure pin 0 of port0
+    PinCfg.Pinnum = 1;
+    PINSEL_ConfigPin(&PinCfg); // configure pin 1 of port0
+    I2C_Init(LPC_I2C1, 100000); // Initialize I2C peripheral
+    I2C_Cmd(LPC_I2C1, ENABLE); // Enable I2C1 operation 
 }
 
-void setFirstLineText(char* arrayPointer, unsigned int lineLength)
-{
-    firstLineText = arrayPointer;
-    firstLinePos = 0;
-    firstLineLength = lineLength;
+void lcd_write_bytes(I2C_M_SETUP_Type * i2c_config, uint8_t bytes[], int length) {
+    i2c_config->tx_data = bytes;
+    i2c_config->tx_length = length;
+    I2C_MasterTransferData(LPC_I2C1, i2c_config, I2C_TRANSFER_POLLING);
 }
 
-void setSecondLineText(char* arrayPointer, unsigned int lineLength)
-{
-    secondLineText = arrayPointer;
-    secondLinePos = 0;
-    secondLineLength = lineLength;
-}
+void lcd_write_message(I2C_M_SETUP_Type * i2c_config, char message[], int length) {
+    uint8_t data_write[17] = { [0 ... 16] = 0xA0};
+    int i;
 
-void scrollAndPrintFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    clearFirstLine(i2cPort, addr);
-    lcdWrite(i2cPort, addr, 0x02);
-    int currPos = firstLinePos;
-    int charsPrinted = 0;
-    while(firstLineText[currPos] != '\0' && charsPrinted < 16)
-    {
-        /*char flagVal[30];
-        int bacVal = readAddressCounter(i2cPort, addr);
-        int flagValLength = sprintf(flagVal, "Value: %x\r\n", bacVal);
-        write_usb_serial_blocking(flagVal, flagValLength);*/
-
-        int next_char = mapCharToLcdInt(firstLineText[currPos++]);
-        if (next_char < 122 || next_char > 154) {
-            lcdPrintChar(i2cPort, addr, next_char);
-            charsPrinted++;
-        }
-
+    data_write[0] = 0x40;
+    for (i = 1; i < length+1; i++) {
+        data_write[i] = map_char(message[i-1]);
     }
 
-    firstLinePos++;
-    if(firstLinePos >= firstLineLength)
-    {
-        firstLinePos = 0;
-    }
+    lcd_write_bytes(i2c_config, data_write, sizeof(data_write));
 }
 
-void scrollAndPrintSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    clearSecondLine(i2cPort, addr);
-    lcdWrite(i2cPort, addr, 0xC0);
-    int currPos = secondLinePos;
-    int charsPrinted = 0;
-    while(secondLineText[currPos] != '\0' && charsPrinted < 16)
-    {
-        /*char flagVal[30];
-        int bacVal = readAddressCounter(i2cPort, addr);
-        int flagValLength = sprintf(flagVal, "Value: %x\r\n", bacVal);
-        write_usb_serial_blocking(flagVal, flagValLength);*/
-
-        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(secondLineText[currPos++]));
-        charsPrinted++;
-    }
-
-    secondLinePos++;
-    if(secondLinePos >= secondLineLength)
-    {
-        secondLinePos = 0;
-    }
+void write_first_line(I2C_M_SETUP_Type * i2c_config, char *line_text, int size) {
+    uint8_t addr_write[] = {0x00, 0x02};
+    lcd_write_bytes(i2c_config, addr_write, sizeof(addr_write));
+    lcd_write_message(i2c_config, line_text, size);
 }
 
-void clearFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    lcdWrite(i2cPort, addr, 0x02); //reset cursor
-    int i = 0;
-    
-    while (i < 16)
-    {
-        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(' '));
-        i++;
-    }
+void write_second_line(I2C_M_SETUP_Type * i2c_config, char *line_text, int size) {
+    uint8_t addr_write[] = {0x00, 0xC0};
+    lcd_write_bytes(i2c_config, addr_write, sizeof(addr_write));
+    lcd_write_message(i2c_config, line_text, size); 
 }
 
-void clearSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    lcdWrite(i2cPort, addr, 0xC0);
-    int i = 0;
-    
-    while (i < 16)
-    {
-        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(' '));
-        i++;
+void scroll_second_line(I2C_M_SETUP_Type * i2c_config, char *line_text, int size) {
+    if (second_line_scroll_i >= size) {
+        second_line_scroll_i = 0;
     }
+
+    write_second_line(i2c_config, &line_text[second_line_scroll_i], size-second_line_scroll_i);
+    second_line_scroll_i++;
 }
 
-void staticPrintFirstLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr, char* text)
-{
-    clearFirstLine(i2cPort, addr);
-    lcdWrite(i2cPort, addr, 0x02);
-    int idx = 0;
-    while(text[idx] != '\0' && idx < 16)
-    {
-        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(text[idx++]));
+void scroll_first_line(I2C_M_SETUP_Type * i2c_config, char *line_text, int size) {
+    if (second_line_scroll_i >= size) {
+        second_line_scroll_i = 0;
     }
-}
 
-void staticPrintSecondLine(LPC_I2C_TypeDef* i2cPort, uint8_t addr, char* text)
-{
-    clearSecondLine(i2cPort, addr);
-    lcdWrite(i2cPort, addr, 0xC0);
-    int idx = 0;
-    while(text[idx] != '\0' && idx < 16)
-    {
-        lcdPrintChar(i2cPort, addr, mapCharToLcdInt(text[idx++]));
-    }
-}
-
-void writeVolCharToCGRAM(LPC_I2C_TypeDef* i2cPort, uint8_t addr)
-{
-    lcdWrite(i2cPort, addr, 0x40);
-    
-    lcdWrite(i2cPort, addr, 0b00000001);
-    lcdWrite(i2cPort, addr, 0b00000011);
-    lcdWrite(i2cPort, addr, 0b00000111);
-    lcdWrite(i2cPort, addr, 0b00011111);
-    lcdWrite(i2cPort, addr, 0b00011111);
-    lcdWrite(i2cPort, addr, 0b00000111);
-    lcdWrite(i2cPort, addr, 0b00000011);
-    lcdWrite(i2cPort, addr, 0b00000001);
-
-   /* lcdWrite(i2cPort, addr, 0b00000001);
-    lcdWrite(i2cPort, addr, 0b00000011);
-    lcdWrite(i2cPort, addr, 0b00000111);
-    lcdWrite(i2cPort, addr, 0b11111111);
-    lcdWrite(i2cPort, addr, 0b11111111);
-    lcdWrite(i2cPort, addr, 0b11111111);
-    lcdWrite(i2cPort, addr, 0b00000111);
-    lcdWrite(i2cPort, addr, 0b00000011);*/
-
+    write_first_line(i2c_config, &line_text[second_line_scroll_i], size-second_line_scroll_i);
+    second_line_scroll_i++;
 }

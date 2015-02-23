@@ -32,15 +32,15 @@ LDFLAGS=$(CMSISFL) -static -mcpu=cortex-m3 -mthumb -mthumb-interwork \
 
 LDFLAGS+=-L$(CMSIS)/lib -lDriversLPC17xxgnu
 
-EXECNAME	= bin/example1
+EXECNAME	= bin/lcd
 
-OBJ		= example1.o lcd.o ../I2C/i2c.o
+OBJ		= example.o lcd.o 
 
-all: 	example1	
+all: 	lcd
 	@echo "Build finished"
 
 
-example1: $(OBJ)
+lcd: $(OBJ)
 	$(CC) -o $(EXECNAME) $(OBJ) $(LDFLAGS)
 	$(OBJCOPY) -I elf32-little -O binary $(EXECNAME) $(EXECNAME).bin
 	
@@ -57,3 +57,4 @@ install:
 	cp $(EXECNAME).bin /media/$(USER)/MBED &
 	sync
 	@echo "Now press the reset button on all MBED file systems"
+

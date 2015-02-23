@@ -6,6 +6,7 @@
 #include "lpc17xx_can.h"
 #include "lpc_types.h"
 #include "lpc17xx_i2c.h"
+#include "lpc17xx_gpio.h"
 
 #include "CAN/can.h"
 #include "UART/uart.h"
@@ -26,8 +27,8 @@ struct CAN_return_data message;
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 uint8_t channel_playing = 1;
 char status_string[16];
-char *first_line;
 char space_string[] = "                ";
+char *first_line;
 
 void CAN_IRQHandler(void) {
     int debug = 1;
@@ -43,7 +44,6 @@ void CAN_IRQHandler(void) {
             strncat(first_line, message.text_data.track, strlen(message.text_data.track) - 12);
             strcat(first_line, " - ");
             strcat(first_line, message.text_data.bpm);
-            setFirstLineText(first_line, strlen(first_line));
 
             message.done = 0;
         }
@@ -82,7 +82,7 @@ extern void EINT3_IRQHandler() {
     }
 
     sprintf(status_string, "Chan: %2d  Vol: %f", channel_playing, output_volume * 10.0);
-    staticPrintSecondLine(LPC_I2C1, LCDAddr, status_string);
+    write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 }
 
 void main() {
@@ -97,7 +97,6 @@ void main() {
     set_voice_by_id(5, wave_buf_1, wave_buf_2);
 
 	i2cInit(LPC_I2C1, 100000);
-	lcdInit(LPC_I2C1, LCDAddr, 0);
     serial_init();
 
     init_dac();
@@ -105,8 +104,19 @@ void main() {
 
     SysTick_Config(2400);
 
+    I2CConfigStruct.retransmissions_max = 3;
+    I2CConfigStruct.sl_addr7bit = 59;
+
+    uint8_t lcd_init[] = {0x00, 0x35, 0x9F, 0x34, 0x0C, 0x02};
+    lcd_write_bytes(&I2CConfigStruct, lcd_init, sizeof(lcd_init));
+
+    uint8_t clear[] = {0x00, 0x01};
+    lcd_write_bytes(&I2CConfigStruct, clear, sizeof(clear));
+
+    isBusyWait(LPC_I2C1, I2CConfigStruct.sl_addr7bit);
+
     sprintf(status_string, "Chan: %2d  Vol: %f", channel_playing, output_volume * 10.0);
-    staticPrintSecondLine(LPC_I2C1, LCDAddr, status_string);
+    write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 
     keypadInit(LPC_I2C1, keypadAddr);
 
