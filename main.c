@@ -16,6 +16,7 @@
 
 #include "I2C/i2c.h"
 #include "LCD/lcd.h"
+#include "keypad/keypad.h"
 
 int debug = 1;
 CAN_MSG_Type RXMsg;
@@ -60,10 +61,26 @@ void CAN_IRQHandler(void) {
     }
 }
 
-void main() {
+extern void EINT3_IRQHandler() {
+	char readChar = keypadRead(LPC_I2C1, keypadAddr);
 
+    // Clear interrupt
+    uint8_t data[] = {0b00001111};
+    i2cWrite(LPC_I2C1, keypadAddr, data, 1);
+    GPIO_ClearInt(0, 0x00800000);
+
+    if (readChar == '#' && output_volume < 0.9) {
+        output_volume += 0.1;
+    } else if (readChar == '*' && output_volume > 0.1) {
+        output_volume -= 0.1;
+    }
+
+    sprintf(status_string, "Chan: %2d  Vol: %f", channel_playing, output_volume * 10.0);
+    staticPrintSecondLine(LPC_I2C1, LCDAddr, status_string);
+}
+
+void main() {
     serial_init();
-    debug_print("Hello mbed", strlen("Hello mbed"));
     set_resolution(RESOLUTION);
    
     double wave_buf_1[RESOLUTION];
@@ -82,8 +99,10 @@ void main() {
 
     SysTick_Config(2400);
 
-    sprintf(status_string, "Chan: %2d  Vol: %d", channel_playing, output_volume);
+    sprintf(status_string, "Chan: %2d  Vol: %f", channel_playing, output_volume * 10.0);
     staticPrintSecondLine(LPC_I2C1, LCDAddr, status_string);
+
+    keypadInit(LPC_I2C1, keypadAddr);
 
     while (1);
 }

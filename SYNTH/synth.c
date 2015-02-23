@@ -50,7 +50,7 @@ double osc_mix;
 
 int scroll_counter = 0;
 
-int output_volume = 9;
+double output_volume = 0.9;
 
 void SysTick_Handler(void) {
     double output_value;
@@ -63,7 +63,7 @@ void SysTick_Handler(void) {
         osc_2_tick = 0;
     }
 
-    if (scroll_counter > 10000) {
+    if (scroll_counter > 20000) {
         scroll_counter = 0;
         scrollAndPrintFirstLine(LPC_I2C1, LCDAddr);
     } else {
@@ -82,7 +82,7 @@ void SysTick_Handler(void) {
     }
 
     //osc_mix = ((double) output_volume / 10.0) * (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
-    osc_mix = output_envelope * (osc_1_value*osc_1_mix+ osc_2_value*osc_2_mix);
+    osc_mix = output_volume * output_envelope * (osc_1_value*osc_1_mix+ osc_2_value*osc_2_mix);
     output_value = (int) floor((osc_mix + 1.0) * 300);
 
     DAC_UpdateValue(LPC_DAC, output_value * note_mute);

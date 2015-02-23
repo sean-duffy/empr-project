@@ -37,4 +37,4 @@ void note_on(double freq);
 void note_off(void);
 
 int scroll_counter;
-int output_volume;
+double output_volume;
