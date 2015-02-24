@@ -2,13 +2,12 @@
 #include <math.h>
 #include <stdlib.h>
 
-/*#include "lpc_types.h"
+#include "lpc_types.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_uart.h"
 #include "lpc17xx_dac.h"
 #include "LPC17xx.h"
 #include "lpc17xx_timer.h"
-*/
 
 #ifndef VOICE_STRUCT_GUARD
 #define VOICE_STRUCT_GUARD
