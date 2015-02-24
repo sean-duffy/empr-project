@@ -52,7 +52,7 @@ int init_timer(void);
 void set_resolution(int new_resolution);
 void set_voice(struct Voice voice);
 double get_freq(int key_n);
-void note_on(double freq);
+int note_on(double freq);
 void note_off(int id);
 
 int scroll_counter;
