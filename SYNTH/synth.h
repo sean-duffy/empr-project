@@ -14,6 +14,8 @@
 #define VOICE_STRUCT_GUARD
 
 #define RESOLUTION 360 
+#define RATE 0.00974999
+#define NOTES_MAX 3
 
 struct Voice {
     double *osc_1_buf;
@@ -29,6 +31,17 @@ struct Voice {
     double *osc_2_buf;
     double osc_2_detune;
     double osc_2_mix;
+};
+
+struct Note {
+		int id;
+		int released;
+		double tick;
+		double inc;
+		double value;
+		
+		double envelope;
+		int ADSR_stage;
 };
 
 #endif
