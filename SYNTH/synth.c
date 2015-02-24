@@ -23,7 +23,6 @@ double output_attack_inc = 0;
 double output_decay_dec = 0;
 double output_sustain_level = 0;
 double output_release_dec = 0;
-
 double *wave;
 int scroll_counter = 0;
 char *first_line;
@@ -150,6 +149,7 @@ void note_off() {
     } else {
         notes[id]->envelope = 0;
     }
+	notes_n--;
 }
 
 double get_freq(int key_n) {
@@ -172,4 +172,3 @@ void set_voice(struct Voice voice) {
 	output_decay_dec =  - (float) (1-voice.sustain_level)/voice.decay_len ;
     output_release_dec = - (float) (voice.sustain_level)/voice.release_len;
 }
-

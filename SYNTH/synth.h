@@ -57,6 +57,17 @@ struct Note {
         int ADSR_stage;
 };
 
+struct Note {
+		int id;
+		int released;
+		double tick;
+		double inc;
+		double value;
+		
+		double envelope;
+		int ADSR_stage;
+};
+
 #endif
 
 void init_dac(void);
