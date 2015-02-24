@@ -149,7 +149,6 @@ void note_off() {
     } else {
         notes[id]->envelope = 0;
     }
-	notes_n--;
 }
 
 double get_freq(int key_n) {

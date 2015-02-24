@@ -59,6 +59,8 @@ struct Note {
 
 struct Note {
 		int id;
+		int active;
+		
 		int released;
 		double tick;
 		double inc;
