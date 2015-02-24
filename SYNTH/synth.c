@@ -41,14 +41,15 @@ int scroll_counter = 0;
 char *first_line;
 
 int notes_n = 0;
+int n_index = 0;
 
-struct Note notes[NOTES_MAX] = {{-1}};
+struct Note notes[NOTES_MAX] = {{0}};
 
 int i;
 int find_empty_note_id(){
 	if (notes_n < NOTES_MAX){
 		for(i=0; i < NOTES_MAX; i++){
-			if(notes[i].id == -1){
+			if(notes[i].active == 0){
 				return i;
 			};
 		}
@@ -58,75 +59,76 @@ int find_empty_note_id(){
 }
 
 void SysTick_Handler(void) {
-
-	//printf("\n-------\n");
-	//printf("<id=%d>\n", notes[0].id);
-	//printf("<released=%d>\n", notes[0].released);
-	//printf("<tick=%f>", notes[0].tick);
-	//printf("<inc=%f>", notes[0].inc);
-	//printf("<val=%f>", notes[0].value);
-    
-	double output_value;
 	
-    if (notes[0].tick >= resolution) {
-        notes[0].tick = 0;
-    }
+			/*
+		if (scroll_counter > 30000) {
+			scroll_counter = 0;
+			scroll_first_line(&I2CConfigStruct, first_line, strlen(first_line));
+		} else {
+			scroll_counter++;
+		}*/
+
+		// Low pass filter
+		//if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
+		//    mix_inc *= -1;
+		//}
 	
-	/*
-    if (scroll_counter > 30000) {
-        scroll_counter = 0;
-        scroll_first_line(&I2CConfigStruct, first_line, strlen(first_line));
-    } else {
-        scroll_counter++;
-    }*/
-
-	// Low pass filter
-    //if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
-    //    mix_inc *= -1;
-    //}
-
-	notes[0].value = osc_1_buf[(int) floor(notes[0].tick)];
-    //osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
+	double output_value = 0;
 	
-    if (notes[0].envelope < 0) {
-        notes[0].envelope = 0;
-    }
-
-    //osc_mix = ((double) output_volume / 10.0) * (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
-    output_value = ((output_volume * notes[0].envelope * notes[0].value)+1) * 300;
-
-    //DAC_UpdateValue(LPC_DAC, output_value * note_mute);
-	plot_print(output_value * note_mute);
-	
-    // Attack
-	if (envelope_on){
-		if (notes[0].released == 0){
-			if (notes[0].ADSR_stage == 0){ // Attack Stage
-				notes[0].envelope += output_attack_inc;
-			} else if (notes[0].ADSR_stage == 1){ // Delay Stage
-				notes[0].envelope += output_decay_dec;
-			} else { // Sustain
-				notes[0].envelope = output_sustain_level;
-			}
-			
-			// Recheck Stages
-			if (notes[0].envelope > 1) { 
-				notes[0].ADSR_stage = 1; 
-				notes[0].envelope = 1;
-			}
-			
-			if ( notes[0].ADSR_stage == 1 && notes[0].envelope < output_sustain_level ) { notes[0].ADSR_stage = 2;}
-			
-		} else if (notes[0].envelope > 0) { // Release
-			if (notes[0].envelope > output_sustain_level) {
-				notes[0].envelope = output_sustain_level;
-			}
-			notes[0].envelope += output_release_dec;
+	for(n_index = 0; n_index < NOTES_MAX; n_index++){		
+		if (notes[n_index].active == 0){
+			continue;
 		}
-	}
+		
+		if (notes[n_index].tick >= resolution) {
+			notes[n_index].tick = 0;
+		}
 
-    notes[0].tick += notes[0].inc;
-    notes[0].tick += notes[0].inc;
+		notes[n_index].value = osc_1_buf[(int) floor(notes[n_index].tick)];
+		//osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
+		
+		if (notes[n_index].envelope < 0) {
+			notes[n_index].envelope = 0;
+		}
+		
+		// Attack
+		if (envelope_on){
+			if (notes[n_index].released == 0){
+				if (notes[n_index].ADSR_stage == 0){ // Attack Stage
+					notes[n_index].envelope += output_attack_inc;
+				} else if (notes[n_index].ADSR_stage == 1){ // Delay Stage
+					notes[n_index].envelope += output_decay_dec;
+				} else { // Sustain
+					notes[n_index].envelope = output_sustain_level;
+				}
+				
+				// Recheck Stages
+				if (notes[n_index].envelope > 1) { 
+					notes[n_index].ADSR_stage = 1; 
+					notes[n_index].envelope = 1;
+				}
+				
+				if ( notes[n_index].ADSR_stage == 1 && notes[n_index].envelope < output_sustain_level ) { notes[n_index].ADSR_stage = 2;}
+				
+			} else if (notes[n_index].envelope > 0) { // Release
+				if (notes[n_index].envelope > output_sustain_level) {
+					notes[n_index].envelope = output_sustain_level;
+				}
+				notes[n_index].envelope += output_release_dec;
+			}
+		}
+
+		notes[n_index].tick += notes[n_index].inc;
+		notes[n_index].tick += notes[n_index].inc;
+		
+		output_value += notes[n_index].envelope * notes[n_index].value;
+		//printf("<out=%f>", output_value);
+	}
+	
+	output_value = ((output_volume * output_value)+1) * 300;
+
+	//DAC_UpdateValue(LPC_DAC, output_value * note_mute);
+	plot_print(output_value * note_mute);
 }
 
 /*
@@ -147,13 +149,13 @@ void init_dac(void) {
 
 void note_on(double freq) {
 	
-	int note_id = 0;//find_empty_note_id();
+	int note_id = find_empty_note_id();	
 	if(note_id == -1){
 		return;
 	} else {
-		notes_n++;
 		notes[note_id].id = note_id;
 		notes[note_id].released = 0;
+		notes[note_id].active = 1;
 		notes[note_id].tick = 0;
 		notes[note_id].inc = (double) RATE * freq;
 		notes[note_id].value = 0;
@@ -163,24 +165,14 @@ void note_on(double freq) {
 			notes[note_id].ADSR_stage = 0;
 		}
 	}
-	
-    //osc_1_inc = RATE * freq; // Bit rate callibrated to middle C
-    //osc_2_inc = osc_1_inc;
-
-    //if (envelope_on) {
-    //    output_envelope = 0;
-    //} else {
-    //    output_envelope = 1;
-    //}
 }
 
-void note_off(void) {
+void note_off(int id) {
     if (envelope_on) {
-        notes[0].released = 1;
+        notes[id].released = 1;
     } else {
-        notes[0].envelope = 0;
+        notes[id].envelope = 0;
     }
-	notes_n--;
 }
 
 double get_freq(int key_n) {
@@ -202,10 +194,6 @@ void set_voice(struct Voice voice) {
     output_release_dec = - (float) (voice.sustain_level)/voice.release_len;
 }
 
-void set_resolution(int new_resolution) {
-    resolution = new_resolution;
-}
-
 int main(){
 
 	init_print();
@@ -214,37 +202,43 @@ int main(){
 	int i;
 	set_voice_by_id(1, buf_1, buf_2);
 	
-	note_off();
+	note_off(0);
 	
 	char buff[30];
 	for(i = 0; i < 5000; i++){
 		SysTick_Handler();
 	}
 	
-	int ni = 0;
-	while (ni < 128){
-		note_on(get_freq(0 + ni));
+	note_on(get_freq(20));
 
-		for(i = 0; i < 4000; i++){
-			SysTick_Handler();
-		}
-		
-		note_off();
-		
-		for(i = 0; i < 4000; i++){
-			SysTick_Handler();
-		}
-		
-		ni++;
-	}
-	/*
-	note_on(get_freq(50));
-	
-	for(i = 0; i < 3000; i++){
+	for(i = 0; i < 4000; i++){
 		SysTick_Handler();
-	}*/
+	}
+		
+	note_on(get_freq(30));
+	note_on(get_freq(40));
+		
+	for(i = 0; i < 500; i++){
+		SysTick_Handler();
+	}
 	
+	note_off(0);
+
+	for(i = 0; i < 4000; i++){
+		SysTick_Handler();
+	}
+		
+	note_off(1);
+		
+	for(i = 0; i < 1000; i++){
+		SysTick_Handler();
+	}
+	
+	note_off(2);
+	
+	for(i = 0; i < 2000; i++){
+		SysTick_Handler();
+	}
 	
 	close_print();
-
 }

@@ -13,9 +13,9 @@
 #ifndef VOICE_STRUCT_GUARD
 #define VOICE_STRUCT_GUARD
 
-#define RESOLUTION 360 
+#define RESOLUTION 360
 #define RATE 0.00974999
-#define NOTES_MAX 3
+#define NOTES_MAX 5
 
 struct Voice {
     double *osc_1_buf;
@@ -35,6 +35,8 @@ struct Voice {
 
 struct Note {
 		int id;
+		int active;
+		
 		int released;
 		double tick;
 		double inc;
@@ -52,7 +54,7 @@ void set_resolution(int new_resolution);
 void set_voice(struct Voice voice);
 double get_freq(int key_n);
 void note_on(double freq);
-void note_off(void);
+void note_off(int id);
 
 int scroll_counter;
 double output_volume;
