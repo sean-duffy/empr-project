@@ -6,7 +6,7 @@
 #include "oscillator.h"
 #include "synth.h"
 #include "wave_sim.h"
-//#include "LCD/lcd.h"
+#include "../LCD/lcd.h"
 
 int duration_passed = 0;
 int resolution = RESOLUTION;
@@ -59,14 +59,13 @@ int find_empty_note_id(){
 }
 
 void SysTick_Handler(void) {
-	
-			/*
-		if (scroll_counter > 30000) {
+
+	if (scroll_counter > 30000) {
 			scroll_counter = 0;
 			scroll_first_line(&I2CConfigStruct, first_line, strlen(first_line));
 		} else {
 			scroll_counter++;
-		}*/
+	}
 
 		// Low pass filter
 		//if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
@@ -122,16 +121,15 @@ void SysTick_Handler(void) {
 		notes[n_index].tick += notes[n_index].inc;
 		
 		output_value += notes[n_index].envelope * notes[n_index].value;
-		//printf("<out=%f>", output_value);
 	}
 	
 	output_value = ((output_volume * output_value)+1) * 300;
 
-	//DAC_UpdateValue(LPC_DAC, output_value * note_mute);
-	plot_print(output_value * note_mute);
+	DAC_UpdateValue(LPC_DAC, output_value * note_mute);
+	//plot_print(output_value * note_mute);
 }
 
-/*
+
 void init_dac(void) {
     PINSEL_CFG_Type PinCfg; 
 
@@ -145,10 +143,11 @@ void init_dac(void) {
     PINSEL_ConfigPin(&PinCfg);
 
     DAC_Init (LPC_DAC);
-}*/
+}
 
 void note_on(double freq) {
-	
+
+
 	int note_id = find_empty_note_id();	
 	if(note_id == -1){
 		return;
@@ -194,6 +193,7 @@ void set_voice(struct Voice voice) {
     output_release_dec = - (float) (voice.sustain_level)/voice.release_len;
 }
 
+/*
 int main(){
 
 	init_print();
@@ -241,4 +241,4 @@ int main(){
 	}
 	
 	close_print();
-}
+}*/
