@@ -7,10 +7,13 @@
 #include "synth.h"
 #include "wave_sim.h"
 #include "../LCD/lcd.h"
+#include "../UART/uart.h"
+
+#define debug_print(n, x) if(1) { write_serial(n, x); write_serial("\n\r", 2); }
+#define debug_print_nnl(n, x) if(1) { write_serial(n, x); }
 
 int duration_passed = 0;
 int resolution = RESOLUTION;
-int note_length = 500;
 
 int envelope_on;
 double output_volume = 0.9;
@@ -42,11 +45,12 @@ char *first_line;
 
 int notes_n = 0;
 int n_index = 0;
+double output_value = 0;
 
 struct Note notes[NOTES_MAX] = {{0}};
 
-int i;
 int find_empty_note_id(){
+    int i;
 	if (notes_n < NOTES_MAX){
 		for(i=0; i < NOTES_MAX; i++){
 			if(notes[i].active == 0){
@@ -59,20 +63,8 @@ int find_empty_note_id(){
 }
 
 void SysTick_Handler(void) {
-
-	if (scroll_counter > 30000) {
-			scroll_counter = 0;
-			scroll_first_line(&I2CConfigStruct, first_line, strlen(first_line));
-		} else {
-			scroll_counter++;
-	}
-
-		// Low pass filter
-		//if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
-		//    mix_inc *= -1;
-		//}
 	
-	double output_value = 0;
+	output_value = 0;
 	
 	for(n_index = 0; n_index < NOTES_MAX; n_index++){		
 		if (notes[n_index].active == 0){
@@ -107,14 +99,19 @@ void SysTick_Handler(void) {
 					notes[n_index].envelope = 1;
 				}
 				
-				if ( notes[n_index].ADSR_stage == 1 && notes[n_index].envelope < output_sustain_level ) { notes[n_index].ADSR_stage = 2;}
+				if ( notes[n_index].ADSR_stage == 1 && notes[n_index].envelope < output_sustain_level ) {
+                    notes[n_index].ADSR_stage = 2;
+                }
 				
 			} else if (notes[n_index].envelope > 0) { // Release
 				if (notes[n_index].envelope > output_sustain_level) {
 					notes[n_index].envelope = output_sustain_level;
 				}
 				notes[n_index].envelope += output_release_dec;
-			}
+			} else {
+                notes[n_index].active = 0;
+                debug_print("END_NOTE",strlen("END_NOTE"));
+            }
 		}
 
 		notes[n_index].tick += notes[n_index].inc;
@@ -122,11 +119,10 @@ void SysTick_Handler(void) {
 		
 		output_value += notes[n_index].envelope * notes[n_index].value;
 	}
-	
-	output_value = ((output_volume * output_value)+1) * 300;
 
-	DAC_UpdateValue(LPC_DAC, output_value * note_mute);
-	//plot_print(output_value * note_mute);
+    if (output_value > 1) { output_value = 1;}
+	output_value = ((output_volume * output_value)+1) * 300 * note_mute;
+	DAC_UpdateValue(LPC_DAC, output_value);
 }
 
 
@@ -146,10 +142,9 @@ void init_dac(void) {
 }
 
 void note_on(double freq) {
-
-
 	int note_id = find_empty_note_id();	
-	if(note_id == -1){
+
+    if(note_id == -1){
 		return;
 	} else {
 		notes[note_id].id = note_id;
@@ -164,6 +159,7 @@ void note_on(double freq) {
 			notes[note_id].ADSR_stage = 0;
 		}
 	}
+
 }
 
 void note_off(int id) {
@@ -193,52 +189,3 @@ void set_voice(struct Voice voice) {
     output_release_dec = - (float) (voice.sustain_level)/voice.release_len;
 }
 
-/*
-int main(){
-
-	init_print();
-	
-	double buf_1[RESOLUTION], buf_2[RESOLUTION];
-	int i;
-	set_voice_by_id(1, buf_1, buf_2);
-	
-	note_off(0);
-	
-	char buff[30];
-	for(i = 0; i < 5000; i++){
-		SysTick_Handler();
-	}
-	
-	note_on(get_freq(20));
-
-	for(i = 0; i < 4000; i++){
-		SysTick_Handler();
-	}
-		
-	note_on(get_freq(30));
-	note_on(get_freq(40));
-		
-	for(i = 0; i < 500; i++){
-		SysTick_Handler();
-	}
-	
-	note_off(0);
-
-	for(i = 0; i < 4000; i++){
-		SysTick_Handler();
-	}
-		
-	note_off(1);
-		
-	for(i = 0; i < 1000; i++){
-		SysTick_Handler();
-	}
-	
-	note_off(2);
-	
-	for(i = 0; i < 2000; i++){
-		SysTick_Handler();
-	}
-	
-	close_print();
-}*/
