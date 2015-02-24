@@ -55,7 +55,7 @@ int find_empty_note_id(){
 		for(i=0; i < NOTES_MAX; i++){
 			if(notes[i].active == 0){
 				return i;
-			};
+			}
 		}
 	}
 	
@@ -109,8 +109,8 @@ void SysTick_Handler(void) {
 				}
 				notes[n_index].envelope += output_release_dec;
 			} else {
-                notes[n_index].active = 0;
-                debug_print("END_NOTE",strlen("END_NOTE"));
+                notes[n_index].active = 0; // Endes the note once it is released and finished
+                notes_n--;
             }
 		}
 
@@ -120,7 +120,6 @@ void SysTick_Handler(void) {
 		output_value += notes[n_index].envelope * notes[n_index].value;
 	}
 
-    if (output_value > 1) { output_value = 1;}
 	output_value = ((output_volume * output_value)+1) * 300 * note_mute;
 	DAC_UpdateValue(LPC_DAC, output_value);
 }
@@ -141,11 +140,18 @@ void init_dac(void) {
     DAC_Init (LPC_DAC);
 }
 
-void note_on(double freq) {
-	int note_id = find_empty_note_id();	
+int note_on(double freq) {
+	int note_id;
+    note_id = find_empty_note_id();	
+
+    if (note_id == NULL){
+    char buf[10];
+    int l = sprintf(buf, "null note_id = %d", note_id);
+    debug_print(buf, l);
+    }
 
     if(note_id == -1){
-		return;
+		return -1;
 	} else {
 		notes[note_id].id = note_id;
 		notes[note_id].released = 0;
@@ -158,11 +164,17 @@ void note_on(double freq) {
 			notes[note_id].envelope = 0;
 			notes[note_id].ADSR_stage = 0;
 		}
-	}
 
+        notes_n++;
+        return note_id;
+	}
+    
 }
 
 void note_off(int id) {
+    if (id == -1){
+        debug_print("id invalid", strlen("id invalid"));
+    }
     if (envelope_on) {
         notes[id].released = 1;
     } else {
