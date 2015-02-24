@@ -22,8 +22,14 @@ double osc_1_mix;
 
 int envelope_on;
 double output_envelope = 1;
+double output_volume = 0.9;
+
+//ADSR
 double output_attack_inc = 0;
-double output_release_inc = 0;
+double output_decay_dec = 0;
+double output_sustain_level = 0;
+double output_release_dec = 0;
+int ADSR_stage = 0;
 
 double osc_2_inc = 3;
 double osc_2_tick = 0;
@@ -40,10 +46,11 @@ double osc_3_mix;
 int note_mute = 1;
 double mix_inc = 0.00002;
 double osc_mix;
-double output_volume = 0.9;
 
 int scroll_counter = 0;
 char *first_line;
+
+int note_1_on = 0;
 
 void SysTick_Handler(void) {
     double output_value;
@@ -83,17 +90,47 @@ void SysTick_Handler(void) {
 	plot_print( output_value * note_mute);
 	
     // Attack
-    if (output_envelope < 1 && released == 0 && envelope_on) {
-        output_envelope += output_attack_inc;
-    }
-
-    // Release
-    if (output_envelope > 0 && released == 1 && envelope_on) {
-        output_envelope += output_release_inc;
-    }
+	if (envelope_on){
+		if (released == 0){
+			if (ADSR_stage == 0){ // Attack Stage
+				output_envelope += output_attack_inc;
+			} else if (ADSR_stage == 1){ // Delay Stage
+				output_envelope += output_decay_dec;
+			} else { // Sustain
+				output_envelope = output_sustain_level;
+			}
+			
+			// Recheck Stages
+			if (output_envelope > 1) { 
+				ADSR_stage = 1; 
+				output_envelope = 1;
+			}
+			
+			if ( ADSR_stage == 1 && output_envelope < output_sustain_level ) { ADSR_stage = 2;}
+			
+		} else if (output_envelope > 0) { // Release
+			if (output_envelope > output_sustain_level) {
+				output_envelope = output_sustain_level;
+			}
+			output_envelope += output_release_dec;
+		}
+		/*
+		if (released == 0){
+			if (output_envelope < 1)) { // Started
+				output_envelope += output_attack_inc;
+			} else if(released == 0 && envelope_on && ( output_envelope > output_sustain_level)){
+				output_envelope += output_decay_dec;
+			} else {
+				output_envelope = output_sustain_level;
+			}
+		} else if (output_envelope > 0) { // Released
+			output_envelope += output_release_dec;
+		} */
+	}
 
     osc_1_tick += osc_1_inc;
     osc_2_tick += osc_2_inc;
+	note_1_on++;
 
     //osc_1_mix += mix_inc;
     //osc_2_mix -= mix_inc;
@@ -117,6 +154,8 @@ void init_dac(void) {
 
 void note_on(double freq) {
     released = 0;
+	note_1_on = 0;
+	
     osc_1_inc = 0.00974999 * freq; // Bit rate callibrated to middle C
     osc_2_inc = osc_1_inc;
 
@@ -146,9 +185,14 @@ void set_voice(struct Voice voice) {
     osc_2_mix = voice.osc_2_mix;
     osc_1_buf = voice.osc_1_buf;
     osc_2_buf = voice.osc_2_buf;
+
+	//Setup ADSR
     envelope_on = voice.envelope_on;
-    output_attack_inc = 0.001 * voice.output_attack;
-    output_release_inc = -0.001 * voice.output_release;
+	output_sustain_level = voice.sustain_level;
+    output_attack_inc =  + (float) 1/voice.attack_len ;
+	output_decay_dec =  - (float) (1-voice.sustain_level)/voice.decay_len ;
+    output_release_dec = - (float) (voice.sustain_level)/voice.release_len;
+	
     mix_inc = 0;
 }
 
@@ -162,15 +206,26 @@ int main(){
 	init_print();
 	
 	double buf_1[RESOLUTION], buf_2[RESOLUTION];
+	int i;
 	set_voice_by_id(1, buf_1, buf_2);
+	
+	note_off();
+	
+	for(i = 0; i < 5000; i++){
+		SysTick_Handler();
+	}
+	
 	note_on(get_freq(60));
 	
-	int i;
-	for(i = 0; i < 30000; i++){
+	for(i = 0; i < 3000; i++){
 		SysTick_Handler();
 	}
 	
 	note_off();
+	
+	for(i = 0; i < 5000; i++){
+		SysTick_Handler();
+	}
 	
 	close_print();
 

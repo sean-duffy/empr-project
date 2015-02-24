@@ -18,8 +18,12 @@
 struct Voice {
     double *osc_1_buf;
     double osc_1_mix;
-    double output_attack;
-    double output_release;
+	
+    int attack_len;
+	int  decay_len;
+	double sustain_level;
+    int release_len;
+	
     int envelope_on;
 
     double *osc_2_buf;
