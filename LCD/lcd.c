@@ -13,7 +13,9 @@ I2C_M_SETUP_Type I2CConfigStruct;
 
 int map_char(char c) {
     if (c == '#') {
-        return 19;
+        return 78;
+    } else if (c == 19) {
+        return ' ';
     } else if (c == '_') {
         return 49;
     } else if (c < 91) {

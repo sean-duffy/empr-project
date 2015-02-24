@@ -26,9 +26,13 @@ struct CAN_return_data message;
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 uint8_t channel_playing = 1;
+int voice_playing = 6;
 char status_string[16];
 char space_string[] = "                ";
 char *first_line;
+
+double wave_buf_1[RESOLUTION];
+double wave_buf_2[RESOLUTION];
 
 void CAN_IRQHandler(void) {
     int debug = 1;
@@ -81,7 +85,15 @@ extern void EINT3_IRQHandler() {
         channel_playing -= 1;
     }
 
-    sprintf(status_string, "Chan: %2d  Vol: %f", channel_playing, output_volume * 10.0);
+    if (readChar == '6' && voice_playing < 6) {
+        voice_playing += 1;
+        set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
+    } else if (readChar == '4' && voice_playing > 1) {
+        voice_playing -= 1;
+        set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
+    }
+
+    sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
     write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 }
 
@@ -89,12 +101,9 @@ void main() {
     serial_init();
     set_resolution(RESOLUTION);
    
-    double wave_buf_1[RESOLUTION];
-	double wave_buf_2[RESOLUTION];
-
     debug_print("set_voice_id", strlen("set_voice_id"));
 
-    set_voice_by_id(5, wave_buf_1, wave_buf_2);
+    set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
 
 	i2cInit(LPC_I2C1, 100000);
     serial_init();
@@ -115,7 +124,7 @@ void main() {
 
     isBusyWait(LPC_I2C1, I2CConfigStruct.sl_addr7bit);
 
-    sprintf(status_string, "Chan: %2d  Vol: %f", channel_playing, output_volume * 10.0);
+    sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
     write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 
     keypadInit(LPC_I2C1, keypadAddr);
