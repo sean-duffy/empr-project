@@ -55,11 +55,17 @@ void lcd_write_bytes(I2C_M_SETUP_Type * i2c_config, uint8_t bytes[], int length)
 
 void lcd_write_message(I2C_M_SETUP_Type * i2c_config, char message[], int length) {
     uint8_t data_write[17] = { [0 ... 16] = 0xA0};
-    int i;
+    int i, j = 0;
+    int c;
 
     data_write[0] = 0x40;
     for (i = 1; i < length+1; i++) {
-        data_write[i] = map_char(message[i-1]);
+        c = map_char(message[i-1]);
+        if (c < 122 || c > 154) {
+            data_write[i-j] = c;
+        } else {
+            j++;
+        }
     }
 
     lcd_write_bytes(i2c_config, data_write, sizeof(data_write));
