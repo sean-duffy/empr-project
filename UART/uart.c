@@ -41,6 +41,11 @@ void serial_init(void)
 	UART_Init((LPC_UART_TypeDef *)LPC_UART0, &UARTConfigStruct);		// Initialize UART0 peripheral with given to corresponding parameter
 	UART_FIFOConfig((LPC_UART_TypeDef *)LPC_UART0, &UARTFIFOConfigStruct);	// Initialize FIFO for UART0 peripheral
 	UART_TxCmd((LPC_UART_TypeDef *)LPC_UART0, ENABLE);			// Enable UART Transmit
+
+    UART_IntConfig(LPC_UART0, UART_INTCFG_RBR, ENABLE);
+    UART_IntConfig(LPC_UART0, UART_INTCFG_RLS, ENABLE);
+
+    NVIC_EnableIRQ(UART0_IRQn);
 	
 }
 
