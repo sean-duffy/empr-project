@@ -30,7 +30,10 @@ def midi_to_note(n):
 
 def midi_to_note(n):
     octave = n / 12
-    note = n % octave
+    if octave > 1:
+        note = n % octave
+    else:
+        note = n
     return (note, octave)
 
 while 1:
@@ -54,6 +57,7 @@ while 1:
                 except IndexError:
                     pass
                 current_note = [c, pygame.Rect(width, height - (octave * 80 + note * block_height), 0, block_height)]
+
     except IOError:
         pass
 
