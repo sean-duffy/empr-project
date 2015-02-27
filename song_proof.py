@@ -28,14 +28,6 @@ def midi_to_note(n):
         note = n
     return (note, octave)
 
-def midi_to_note(n):
-    octave = n / 12
-    if octave > 1:
-        note = n % octave
-    else:
-        note = n
-    return (note, octave)
-
 while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
