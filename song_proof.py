@@ -4,8 +4,10 @@ size = width, height = 1400, 800
 speed = 3
 block_height = 10
 black = (17, 17, 17)
-colours = [(87, 74, 206), (8, 112, 244), (55, 166, 214), (91, 196, 246),
-           (78, 216, 105), (252, 203, 47), (250, 147, 34), (249, 54, 48)]
+colours = [(163, 21, 141), (237, 15, 37), (238, 59, 63),
+           (246, 129, 45), (249, 168, 48), (255, 225, 59),
+           (112, 193, 80), (2, 167, 101), (5, 171, 173),
+           (3, 100, 178), (34, 59, 153), (92, 38, 143)]
 blocks = []
 current_note = None
 
@@ -15,6 +17,11 @@ screen = pygame.display.set_mode(size)
 flags = fcntl.fcntl(sys.stdin, fcntl.F_GETFL) # get current p.stdout flags
 fcntl.fcntl(sys.stdin, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
+def midi_to_note(n):
+    octave = n / 12
+    note = n % octave
+    return (note, octave)
+
 while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
@@ -22,10 +29,11 @@ while 1:
     try:
         line = sys.stdin.readline()
         print line
-        line_match = re.match('(ON|OFF): ([A-G])(\d*)', line)
-        action, note, octave = line_match.groups()
+        line_match = re.match('(ON|OFF): (\d*)', line)
+        action, midi_note = line_match.groups()
         if action == 'ON':
-            current_note = [colours[ord(note) - 65], pygame.Rect(width, 250 + (ord(note) - 65) * block_height, 0, block_height)]
+            note, octave = midi_to_note(int(midi_note))
+            current_note = [colours[note], pygame.Rect(width, octave * 80 + note * block_height, 0, block_height)]
         else:
             blocks.append(current_note)
             current_note = None
