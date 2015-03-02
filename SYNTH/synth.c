@@ -43,84 +43,81 @@ double osc_mix;
 int scroll_counter = 0;
 char *first_line;
 
-int notes_n = 0;
+int note_1n = 0;
 int n_index = 0;
 double output_value = 0;
 
-struct Note notes[NOTES_MAX] = {{0}};
+struct Note note_1 = {0};
+struct Note note_2 = {0};
 
-int find_empty_note_id(){
-    int i;
-	if (notes_n < NOTES_MAX){
-		for(i=0; i < NOTES_MAX; i++){
-			if(notes[i].active == 0){
-				return i;
-			}
-		}
-	}
-	
-	return -1;
+struct Note *notes[NOTES_N] = {&note_1, &note_2};
+
+int get_free_note_id(){
+    if(note_1.active == 0){
+        return 0;
+    } else if (note_2.active == 0){
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 void SysTick_Handler(void) {
 	
 	output_value = 0;
-	
-	for(n_index = 0; n_index < NOTES_MAX; n_index++){		
-		if (notes[n_index].active == 0){
-			continue;
-		}
-		
-		if (notes[n_index].tick >= resolution) {
-			notes[n_index].tick = 0;
-		}
 
-		notes[n_index].value = osc_1_buf[(int) floor(notes[n_index].tick)];
-		//osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
-		
-		if (notes[n_index].envelope < 0) {
-			notes[n_index].envelope = 0;
-		}
-		
-		// Attack
-		if (envelope_on){
-			if (notes[n_index].released == 0){
-				if (notes[n_index].ADSR_stage == 0){ // Attack Stage
-					notes[n_index].envelope += output_attack_inc;
-				} else if (notes[n_index].ADSR_stage == 1){ // Delay Stage
-					notes[n_index].envelope += output_decay_dec;
-				} else { // Sustain
-					notes[n_index].envelope = output_sustain_level;
-				}
-				
-				// Recheck Stages
-				if (notes[n_index].envelope > 1) { 
-					notes[n_index].ADSR_stage = 1; 
-					notes[n_index].envelope = 1;
-				}
-				
-				if ( notes[n_index].ADSR_stage == 1 && notes[n_index].envelope < output_sustain_level ) {
-                    notes[n_index].ADSR_stage = 2;
+    int i;
+    for(i = 0; i < NOTES_N; i ++){
+        if (notes[i]->active == 0){
+            continue;
+        }
+        
+        if (notes[i]->tick >= resolution) {
+            notes[i]->tick = 0;
+        }
+
+        notes[i]->value = osc_1_buf[(int) floor(notes[i]->tick)];
+        
+        if (notes[i]->envelope < 0) {
+            notes[i]->envelope = 0;
+        }
+        
+        // ADSR
+        if (envelope_on){
+            if (notes[i]->released == 0){
+                if (notes[i]->ADSR_stage == 0){ // Attack Stage
+                    notes[i]->envelope += output_attack_inc;
+                } else if (notes[i]->ADSR_stage == 1){ // Delay Stage
+                    notes[i]->envelope += output_decay_dec;
+                } else { // Sustain
+                    notes[i]->envelope = output_sustain_level;
                 }
-				
-			} else if (notes[n_index].envelope > 0) { // Release
-				if (notes[n_index].envelope > output_sustain_level) {
-					notes[n_index].envelope = output_sustain_level;
-				}
-				notes[n_index].envelope += output_release_dec;
-			} else {
-                notes[n_index].active = 0; // Endes the note once it is released and finished
-                notes_n--;
+                
+                // Recheck Stages
+                if (notes[i]->envelope > 1) { 
+                    notes[i]->ADSR_stage = 1; 
+                    notes[i]->envelope = 1;
+                }
+                
+                if ( notes[i]->ADSR_stage == 1 && notes[i]->envelope < output_sustain_level ) {
+                    notes[i]->ADSR_stage = 2;
+                }
+                
+            } else if (note_1.envelope > 0) { // Release
+                if (notes[i]->envelope > output_sustain_level) {
+                    notes[i]->envelope = output_sustain_level;
+                }
+                notes[i]->envelope += output_release_dec;
+            } else {
+                notes[i]->active = 0; // Endes the note once it is released and finished
             }
-		}
 
-		notes[n_index].tick += notes[n_index].inc;
-		notes[n_index].tick += notes[n_index].inc;
-		
-		output_value += notes[n_index].envelope * notes[n_index].value;
-	}
-
-	output_value = ((output_volume * output_value)+1) * 300 * note_mute;
+            notes[i]->tick += notes[i]->inc;
+            output_value += notes[i]->envelope * notes[i]->value;
+        }
+    }
+	
+    output_value = ((output_volume * output_value)+1) * 100 * note_mute;
 	DAC_UpdateValue(LPC_DAC, output_value);
 }
 
@@ -141,44 +138,27 @@ void init_dac(void) {
 }
 
 int note_on(double freq) {
-	int note_id;
-    note_id = find_empty_note_id();	
+        int id = get_free_note_id();
 
-    if (note_id == NULL){
-    char buf[10];
-    int l = sprintf(buf, "null note_id = %d", note_id);
-    debug_print(buf, l);
-    }
-
-    if(note_id == -1){
-		return -1;
-	} else {
-		notes[note_id].id = note_id;
-		notes[note_id].released = 0;
-		notes[note_id].active = 1;
-		notes[note_id].tick = 0;
-		notes[note_id].inc = (double) RATE * freq;
-		notes[note_id].value = 0;
+		notes[id]->released = 0;
+		notes[id]->active = 1;
+		notes[id]->tick = 0;
+		notes[id]->inc = (double) RATE * freq;
+		notes[id]->value = 0;
 		
 		if(envelope_on){
-			notes[note_id].envelope = 0;
-			notes[note_id].ADSR_stage = 0;
+			notes[id]->envelope = 0;
+			notes[id]->ADSR_stage = 0;
 		}
 
-        notes_n++;
-        return note_id;
-	}
-    
+        return id;
 }
 
 void note_off(int id) {
-    if (id == -1){
-        debug_print("id invalid", strlen("id invalid"));
-    }
     if (envelope_on) {
-        notes[id].released = 1;
+        notes[id]->released = 1;
     } else {
-        notes[id].envelope = 0;
+        notes[id]->envelope = 0;
     }
 }
 
