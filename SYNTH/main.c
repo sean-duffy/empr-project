@@ -73,30 +73,17 @@ void main() {
 
     //Inits
     init_dac();
-    SysTick_Config(2400);
+    SysTick_Config(2700);
     
     int xx;
-
-    int note_1_id = note_on(get_freq(60));
-    for(xx = 0; xx < 5000; xx++){}
-    note_off(note_1_id);
-
-    for(xx = 0; xx < 200000; xx++){}
     
-    int note_2_id = note_on(get_freq(58));
-    for(xx = 0; xx < 5000; xx++){}
-    note_off(note_2_id);
+    debug_print("Hello World", strlen("Hello World"));
 
-    for(xx = 0; xx < 200000; xx++){}
-    
-    note_1_id = note_on(get_freq(52));
-    note_2_id = note_on(get_freq(60));
+    int note_b;
 
-    char buf[30];
-    int l = sprintf(buf,"n_1 = %d, n_2 = %d", note_1_id, note_2_id);
-    debug_print(buf, l);
-
-    for(xx = 0; xx < 5000; xx++){}
+    note_on(get_freq(60));
+    debug_print("Hello Delay", strlen("Hello World"));
+    note_on(get_freq(67));
 
     debug_print("Done", strlen("Done"));
     while (1);
