@@ -56,8 +56,11 @@ struct Note {
         int ADSR_stage;
 };
 
+#endif
+
+#ifndef guard
+#define guard
 struct Note {
-		int id;
 		int active;
 		
 		int released;
