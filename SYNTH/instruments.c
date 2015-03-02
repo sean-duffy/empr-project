@@ -15,10 +15,10 @@ void init_voice_1(double wave_buf_1[], double wave_buf_2[]){
     voice_1.osc_2_mix = 0.5;
     voice_1.osc_2_detune = 0;
 	
-    voice_1.attack_len = 500;
-	voice_1.decay_len = 500;
+    voice_1.attack_len = 5000;
+	voice_1.decay_len = 2000;
 	voice_1.sustain_level = 0.5;
-    voice_1.release_len = 500;
+    voice_1.release_len = 100000;
 
     voice_1.envelope_on = 1;
 }
