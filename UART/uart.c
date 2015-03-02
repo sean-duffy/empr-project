@@ -45,6 +45,8 @@ void serial_init(void)
     UART_IntConfig(LPC_UART0, UART_INTCFG_RBR, ENABLE);
     UART_IntConfig(LPC_UART0, UART_INTCFG_RLS, ENABLE);
 
+    NVIC_SetPriority(UART0_IRQn, 20);
+
     NVIC_EnableIRQ(UART0_IRQn);
 	
 }

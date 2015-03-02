@@ -30,7 +30,7 @@ uint8_t channel_playing = 1;
 int voice_playing = 6;
 char status_string[16];
 char space_string[] = "                ";
-char *first_line;
+char *first_line = NULL;
 
 double wave_buf_1[RESOLUTION];
 double wave_buf_2[RESOLUTION];
@@ -76,8 +76,84 @@ typedef struct
 
 #define SERIALSIZE 100
 
+#define NAMEREQ 6
+#define VOLREQ 7
+#define CHANREQ 8
+#define INSTREQ 9
+
+#define VOLDATA  0 
+#define CHANDATA  1 
+#define INSTDATA  2 
+#define NAMEDATA  3
+
+
 uint8_t serialArray[SERIALSIZE];
 uint8_t serialCount = 0;
+
+uint8_t recCommand, recDataLen;
+char recPayload[100];
+
+
+void sendSongTitle()
+{
+    if(first_line == NULL)
+    {
+        char toSend[] = {0xFF, 19, NAMEDATA, '(', 'W', 'a', 'i', 't', 'i', 'n', 'g', ' ', 'f', 'o', 'r', ' ', 'n', 'a', 'm', 'e', ')', '\0', 0xEE};
+        write_serial(toSend, 23);
+    }
+    else
+    {
+        int nameLen;
+        //char* traverse = first_line;
+        //while(*first_line != '\0')
+        //{
+        //    nameLen++;
+        //}
+        char* traverse;
+        for(traverse = first_line; *traverse; ++traverse)
+        {
+             nameLen++;
+        }
+        char toSend[nameLen + 4];// = {0xFF, 15, NAMEDATA, 'T', 'e', 's', 't', ' ', 'S', 'o', 'n', 'g', ' ', 'N', 'a', 'm', 'e', '\0', 0xEE};
+        
+        int i;
+        toSend[0] = 0xFF;
+        toSend[1] = nameLen; //payload size
+        toSend[2] = NAMEDATA;
+        //for(i = 0; i != nameLen - 1; i++)
+        //{
+       //     toSend[i+3] = *(first_line + i);
+        //}
+        int k = 0;
+        char* traverse2;
+        for(traverse2 = first_line; *traverse2; ++traverse)
+        {
+             toSend[3 + k++] = *traverse2;
+        }
+
+        toSend[nameLen] = 0xEE;
+
+        write_serial(toSend, nameLen + 4);
+    }
+}
+
+void sendVol()
+{
+    char toSend[] = {0xFF, 1, VOLDATA, (uint8_t)('0'+((int)(output_volume * 10.0))), 0xEE};
+    write_serial(toSend, 5);
+}
+
+void sendChan()
+{
+    char toSend[] = {0xFF, 1, CHANDATA, (uint8_t)('0'+(int)channel_playing), 0xEE};
+    write_serial(toSend, 5);
+}
+
+void sendInst()
+{
+    char toSend[] = {0xFF, 1, INSTDATA, (uint8_t)('0'+(int)voice_playing), 0xEE};
+    write_serial(toSend, 5);
+}
 
 void UART_IntReceive(void)
  {
@@ -96,10 +172,6 @@ void UART_IntReceive(void)
                          if (!__BUF_IS_FULL(rb.rx_head,rb.rx_tail)){
                                  rb.rx[rb.rx_head] = tmpc;
                                  serialArray[serialCount++] = tmpc;
-                                 //if(serialCount > SERIALSIZE)    
-                                // {
-                                  //   serialCount = 0;
-                                 //}
                                  __BUF_INCR(rb.rx_head);
                                 
                          }
@@ -112,12 +184,76 @@ void UART_IntReceive(void)
                             write_serial(&rb.rx[loopCount++], 2);     
                         }*/
                         //write_serial(&rb.rx[rb.rx_head], 2);
-                        if(serialCount > 10)
+
+                        /*if(serialCount > 10)
                         {
                             write_serial((char*)serialArray, serialCount);
                             serialCount = 0;
                         }
                         write_serial("\r\n", 2);
+                        break;*/
+
+                        if(serialArray[0] == 0xFF && serialArray[serialCount-1] == 0xEE)
+                        {
+                            uint8_t dispChange = 0;
+                            recDataLen = serialArray[1];
+                            recCommand = serialArray[2];
+                            if(recCommand == NAMEREQ)
+                            {
+                                sendSongTitle();
+                            }
+
+                            else if(recCommand == VOLREQ)
+                            {
+                                sendVol();
+                            }
+
+                            else if(recCommand == CHANREQ)
+                            {
+                                sendChan();
+                            }
+
+                            else if(recCommand == INSTREQ)
+                            {
+                                sendInst();
+                            }
+
+                            else if(recCommand == VOLDATA)
+                            {
+                                if (serialArray[3] <= 9 && serialArray[3] > 0) 
+                                {
+                                    output_volume = (float)serialArray[3] / 10.0;
+                                    dispChange = 1;
+                                }
+                            }
+
+                            else if(recCommand == CHANDATA)
+                            {
+                                if (serialArray[3] <= 15 && serialArray[3] > 0) 
+                                {
+                                    channel_playing = serialArray[3];
+                                    dispChange = 1;
+                                }
+                            }
+
+                            else if(recCommand == INSTDATA)
+                            {
+                                if (serialArray[3] <= 6 && serialArray[3] > 0) 
+                                {
+                                    voice_playing = serialArray[3];
+                                    set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
+                                    dispChange = 1;
+                                }
+                            }
+
+                            if(dispChange)
+                            {
+                                sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
+                                write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
+                            }
+                            serialCount = 0;
+                        }
+
                         break;
                  }
          }
@@ -162,7 +298,7 @@ void UART_IntErr(uint8_t bLSErrType)
  {
          uint8_t test;
          // Loop forever
-         write_serial("UART ERROR\r\n", 12);
+         debug_print("UART ERROR\r\n", 12);
          while (1){
                  // For testing purpose
                  test = bLSErrType;
@@ -205,7 +341,6 @@ void UART0_IRQHandler(void)
 /*Personal ends here*/
 
 void CAN_IRQHandler(void) {
-    int debug = 1;
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
 
     if((IntStatus>>0)&0x01) {
@@ -213,12 +348,13 @@ void CAN_IRQHandler(void) {
         interpret_message(&RXMsg, 1, &message);
 
         if (message.done) {
+            free(first_line);
             first_line = (char *) calloc(strlen(message.text_data.track) - 12 + 16 + 3 + strlen(message.text_data.bpm), sizeof(char));
             strcpy(first_line, space_string);
             strncat(first_line, message.text_data.track, strlen(message.text_data.track) - 12);
             strcat(first_line, " - ");
             strcat(first_line, message.text_data.bpm);
-
+            //sendSongTitle();
             message.done = 0;
         }
 
@@ -245,22 +381,28 @@ extern void EINT3_IRQHandler() {
 
     if (readChar == '#' && output_volume < 0.9) {
         output_volume += 0.1;
+        sendVol();
     } else if (readChar == '*' && output_volume > 0.1) {
         output_volume -= 0.1;
+        sendVol();
     }
 
     if (readChar == '9' && channel_playing < 15) {
         channel_playing += 1;
+        sendChan();
     } else if (readChar == '7' && channel_playing > 1) {
         channel_playing -= 1;
+        sendChan();
     }
 
     if (readChar == '6' && voice_playing < 6) {
         voice_playing += 1;
         set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
+        sendInst();
     } else if (readChar == '4' && voice_playing > 1) {
         voice_playing -= 1;
         set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
+        sendInst();
     }
 
     sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
@@ -271,13 +413,10 @@ extern void EINT3_IRQHandler() {
 void main() {
     serial_init();
     set_resolution(RESOLUTION);
-   
-    debug_print("set_voice_id", strlen("set_voice_id"));
 
     set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
 
 	i2cInit(LPC_I2C1, 100000);
-    serial_init();
 
     init_dac();
     init_can(250000, 0);
@@ -299,6 +438,8 @@ void main() {
     write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 
     keypadInit(LPC_I2C1, keypadAddr);
-
+    
+    //sendSongTitle();    
+    
     while (1);
 }
