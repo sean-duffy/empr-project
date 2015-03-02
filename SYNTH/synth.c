@@ -24,32 +24,14 @@ double output_decay_dec = 0;
 double output_sustain_level = 0;
 double output_release_dec = 0;
 
-double osc_2_inc = 3;
-double osc_2_tick = 0;
-double *osc_2_buf;
-double osc_2_value = 0;
-double osc_2_mix;
-
-double osc_1_inc = 3;
-double osc_1_tick = 0;
-double *osc_1_buf;
-double osc_1_value;
-//double osc_1_mix;
-
-int note_mute = 1;
-double mix_inc = 0.00002;
-double osc_mix;
-
+double *wave;
 int scroll_counter = 0;
 char *first_line;
 
-int note_1n = 0;
-int n_index = 0;
 double output_value = 0;
 
 struct Note note_1 = {0};
 struct Note note_2 = {0};
-
 struct Note *notes[NOTES_N] = {&note_1, &note_2};
 
 int get_free_note_id(){
@@ -76,13 +58,14 @@ void SysTick_Handler(void) {
             notes[i]->tick = 0;
         }
 
-        notes[i]->value = osc_1_buf[(int) floor(notes[i]->tick)];
+        notes[i]->value = wave[(int) floor(notes[i]->tick)];
         
         if (notes[i]->envelope < 0) {
             notes[i]->envelope = 0;
         }
         
         // ADSR
+        //
         if (envelope_on){
             if (notes[i]->released == 0){
                 if (notes[i]->ADSR_stage == 0){ // Attack Stage
@@ -117,7 +100,7 @@ void SysTick_Handler(void) {
         }
     }
 	
-    output_value = ((output_volume * output_value)+1) * 100 * note_mute;
+    output_value = ((output_volume * output_value)+1) * 100; 
 	DAC_UpdateValue(LPC_DAC, output_value);
 }
 
@@ -169,9 +152,7 @@ double get_freq(int key_n) {
 }
 
 void set_voice(struct Voice voice) {
-    osc_2_mix = voice.osc_2_mix;
-    osc_1_buf = voice.osc_1_buf;
-    osc_2_buf = voice.osc_2_buf;
+    wave = voice.osc_1_buf;
 
 	//Setup ADSR
     envelope_on = voice.envelope_on;
