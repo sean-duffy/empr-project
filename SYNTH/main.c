@@ -82,8 +82,6 @@ void main() {
     int note_b;
 
     note_on(get_freq(60));
-    debug_print("Hello Delay", strlen("Hello World"));
-    note_on(get_freq(67));
 
     debug_print("Done", strlen("Done"));
     while (1);
