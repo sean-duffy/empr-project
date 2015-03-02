@@ -68,6 +68,7 @@ void SysTick_Handler(void) {
         }
 
         // ADSR
+        //
         if (envelope_on){
             if (notes[i]->released == 0){
                 if (notes[i]->ADSR_stage == 0){ // Attack Stage
