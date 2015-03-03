@@ -69,7 +69,7 @@ void main() {
     double wave_buf_1[RESOLUTION];
 	double wave_buf_2[RESOLUTION];
 
-    set_voice_by_id(1, wave_buf_1, wave_buf_2);
+    set_voice_by_id(2, wave_buf_1, wave_buf_2);
 
     //Inits
     init_dac();
@@ -80,12 +80,15 @@ void main() {
     debug_print("Hello World", strlen("Hello World"));
 
     int note_b;
+    int note = 70;
 
-    note_on(get_freq(55));
-
-    for(xx = 0; xx<5000000; xx++){}
-
-    note_off(0);
+    int n = 0;
+    while(1){
+        note_on(get_freq(note--));
+        for(xx = 0; xx<700000; xx++){}
+        note_off(0);
+        for(xx = 0; xx<500000; xx++){}
+    }
 
     debug_print("Done", strlen("Done"));
     while (1);

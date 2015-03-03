@@ -38,7 +38,8 @@ double lfo_tick;
 
 //Note structures
 struct Note note_1 = {0};
-struct Note *notes[NOTES_N] = {&note_1};
+struct Note note_2 = {0};
+struct Note *notes[NOTES_N] = {&note_1, &note_2};
 
 int get_free_note_id(){
         return 0;
@@ -50,15 +51,13 @@ void SysTick_Handler(void) {
 
     int i;
     for(i = 0; i < NOTES_N; i ++){
-        if (notes[i]->active == 0){
-            continue;
-        }
-        
-        if (notes[i]->tick >= resolution) {
-            notes[i]->tick = 0;
-        }
 
-        notes[i]->value = wave[(int) floor(notes[i]->tick)];
+        //if (notes[i]->active == 0){ continue;} // Skip if not not active
+        if (notes[i]->tick >= resolution) { notes[i]->tick = 0;} // Modulus tick by resolution
+        if (notes[i]->lfo_tick>= resolution) { notes[i]->lfo_tick = 0;} // modulus lfo tick by resolution
+
+        notes[i]->value = wave[(int) floor(notes[i]->tick)] * lfo_wave[(int) floor(notes[i]->lfo_tick)] * notes[i]->active;
+
         
         if (notes[i]->envelope < 0) {
             notes[i]->envelope = 0;
@@ -100,11 +99,12 @@ void SysTick_Handler(void) {
             }
 
             notes[i]->tick += notes[i]->inc;
+            notes[i]->lfo_tick += lfo_inc;
             output_value += notes[i]->envelope * notes[i]->value;
         }
     }
 	
-    output_value = ((output_volume * output_value)+1) * 100; 
+    output_value = ((output_volume * output_value)+1) * 400; 
 	DAC_UpdateValue(LPC_DAC, output_value);
 }
 
@@ -130,6 +130,7 @@ int note_on(double freq) {
 		notes[id]->released = 0;
 		notes[id]->active = 1;
         notes[id]->delay_tick = 0;
+        notes[id]->lfo_tick = 0;
 		notes[id]->tick = 0;
 		notes[id]->inc = (double) RATE * freq;
 		notes[id]->value = 0;
@@ -162,7 +163,6 @@ void set_voice(struct Voice voice) {
     output_delay = voice.delay;
     lfo_wave = voice.lfo_buf;
     lfo_inc = RATE * voice.lfo_freq;
-    lfo_tick = 0;
 
 	//Setup ADSR
     envelope_on = voice.envelope_on;
