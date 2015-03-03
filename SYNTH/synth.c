@@ -37,7 +37,8 @@ double lfo_tick;
 
 //Note structures
 struct Note note_1 = {0};
-struct Note *notes[NOTES_N] = {&note_1};
+struct Note note_2 = {0};
+struct Note *notes[NOTES_N] = {&note_1, &note_2};
 
 int get_free_note_id(){
         return 0;
