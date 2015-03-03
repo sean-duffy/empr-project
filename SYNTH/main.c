@@ -82,7 +82,10 @@ void main() {
     int note_b;
 
     note_on(get_freq(55));
-    note_on(get_freq(62));
+
+    for(xx = 0; xx<5000000; xx++){}
+
+    note_off(0);
 
     debug_print("Done", strlen("Done"));
     while (1);
