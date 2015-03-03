@@ -14,6 +14,9 @@
 
 #define RESOLUTION 360
 #define RATE 0.00974999
+#define LFO_RATE 0.0005
+#define ADSR_RATE 40
+
 #define NOTES_N 1
 
 struct Voice {
@@ -45,7 +48,7 @@ struct Note {
         int released;
         
         double delay_tick;
-		
+	    double lfo_tick;	
         double tick;
 		double inc;
         double value;
