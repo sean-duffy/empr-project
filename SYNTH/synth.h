@@ -14,18 +14,21 @@
 
 #define RESOLUTION 360
 #define RATE 0.00974999
-#define NOTES_N 2
+#define NOTES_N 1
 
 struct Voice {
     double *osc_1_buf;
     double osc_1_mix;
-	
+
+    //Envelope
+    int envelope_on;
     int attack_len;
 	int  decay_len;
 	double sustain_level;
     int release_len;
 	
-    int envelope_on;
+    //Fx 
+    int delay;
 
     double *osc_2_buf;
     double osc_2_detune;
@@ -38,14 +41,15 @@ struct Voice {
 #define guard
 struct Note {
 		int active;
+        int released;
+        
+        double delay_tick;
 		
-		int released;
-		double tick;
+        double tick;
 		double inc;
-		double value;
-		
-		double envelope;
-		int ADSR_stage;
+        double value;
+        double envelope;
+        int ADSR_stage;
 };
 
 #endif

@@ -29,19 +29,13 @@ int scroll_counter = 0;
 char *first_line;
 
 double output_value = 0;
+int output_delay = 0;
 
 struct Note note_1 = {0};
-struct Note note_2 = {0};
-struct Note *notes[NOTES_N] = {&note_1, &note_2};
+struct Note *notes[NOTES_N] = {&note_1};
 
 int get_free_note_id(){
-    if(note_1.active == 0){
         return 0;
-    } else if (note_2.active == 0){
-        return 1;
-    } else {
-        return 0;
-    }
 }
 
 void SysTick_Handler(void) {
@@ -64,8 +58,12 @@ void SysTick_Handler(void) {
             notes[i]->envelope = 0;
         }
         
+        if(notes[i]->delay_tick < output_delay){
+            notes[i]->delay_tick++;
+            continue;
+        }
+
         // ADSR
-        //
         if (envelope_on){
             if (notes[i]->released == 0){
                 if (notes[i]->ADSR_stage == 0){ // Attack Stage
@@ -125,6 +123,7 @@ int note_on(double freq) {
 
 		notes[id]->released = 0;
 		notes[id]->active = 1;
+        notes[id]->delay_tick = 0;
 		notes[id]->tick = 0;
 		notes[id]->inc = (double) RATE * freq;
 		notes[id]->value = 0;
@@ -156,6 +155,7 @@ void set_voice(struct Voice voice) {
 
 	//Setup ADSR
     envelope_on = voice.envelope_on;
+    output_delay = voice.delay;
 	output_sustain_level = voice.sustain_level;
     output_attack_inc =  + (float) 1/voice.attack_len ;
 	output_decay_dec =  - (float) (1-voice.sustain_level)/voice.decay_len ;
