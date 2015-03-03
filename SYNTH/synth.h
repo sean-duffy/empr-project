@@ -62,14 +62,15 @@ struct Note {
 #define guard
 struct Note {
 		int active;
+        int released;
+        
+        double delay_tick;
 		
-		int released;
-		double tick;
+        double tick;
 		double inc;
-		double value;
-		
-		double envelope;
-		int ADSR_stage;
+        double value;
+        double envelope;
+        int ADSR_stage;
 };
 
 #endif

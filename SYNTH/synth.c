@@ -37,8 +37,7 @@ double lfo_tick;
 
 //Note structures
 struct Note note_1 = {0};
-struct Note note_2 = {0};
-struct Note *notes[NOTES_N] = {&note_1, &note_2};
+struct Note *notes[NOTES_N] = {&note_1};
 
 int get_free_note_id(){
         return 0;
@@ -68,7 +67,6 @@ void SysTick_Handler(void) {
         }
 
         // ADSR
-        //
         if (envelope_on){
             if (notes[i]->released == 0){
                 if (notes[i]->ADSR_stage == 0){ // Attack Stage
@@ -167,6 +165,7 @@ void set_voice(struct Voice voice) {
 
 	//Setup ADSR
     envelope_on = voice.envelope_on;
+    output_delay = voice.delay;
 	output_sustain_level = voice.sustain_level;
     output_attack_inc =  + (float) 1/voice.attack_len ;
 	output_decay_dec =  - (float) (1-voice.sustain_level)/voice.decay_len ;
