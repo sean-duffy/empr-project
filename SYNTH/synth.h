@@ -27,12 +27,13 @@ struct Voice {
 	double sustain_level;
     int release_len;
 	
-    //Fx 
+    //Delay
     int delay;
 
-    double *osc_2_buf;
-    double osc_2_detune;
-    double osc_2_mix;
+    //LFO
+    double *lfo_buf;
+    double lfo_freq;
+
 };
 
 #endif

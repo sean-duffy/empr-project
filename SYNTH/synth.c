@@ -31,6 +31,12 @@ char *first_line;
 double output_value = 0;
 int output_delay = 0;
 
+//LFO
+double *lfo_wave;
+double lfo_inc;
+double lfo_tick;
+
+//Note structures
 struct Note note_1 = {0};
 struct Note *notes[NOTES_N] = {&note_1};
 
@@ -153,9 +159,13 @@ double get_freq(int key_n) {
 void set_voice(struct Voice voice) {
     wave = voice.osc_1_buf;
 
+    output_delay = voice.delay;
+    lfo_wave = voice.lfo_buf;
+    lfo_inc = RATE * voice.lfo_freq;
+    lfo_tick = 0;
+
 	//Setup ADSR
     envelope_on = voice.envelope_on;
-    output_delay = voice.delay;
 	output_sustain_level = voice.sustain_level;
     output_attack_inc =  + (float) 1/voice.attack_len ;
 	output_decay_dec =  - (float) (1-voice.sustain_level)/voice.decay_len ;

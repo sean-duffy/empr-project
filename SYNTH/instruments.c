@@ -10,19 +10,18 @@ void init_voice_1(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_1.osc_1_buf = wave_buf_1;
-    voice_1.osc_1_mix = 0.5;
-    voice_1.osc_2_buf = wave_buf_2;
-    voice_1.osc_2_mix = 0.5;
-    voice_1.osc_2_detune = 0;
 	
     voice_1.attack_len = 5000;
 	voice_1.decay_len = 2000;
 	voice_1.sustain_level = 0.5;
-    voice_1.release_len = 100000;
+    voice_1.release_len = 5000;
     
     voice_1.delay = 5000;
 
     voice_1.envelope_on = 1;
+
+    voice_1.lfo_buf = wave_buf_2;
+    voice_1.lfo_freq = 15; //Hz
 }
 
 void set_voice_by_id(int voice_id, double wave_buf_1[], double wave_buf_2[]){
