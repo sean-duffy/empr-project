@@ -143,7 +143,8 @@ int note_on(double freq) {
         return id;
 }
 
-void note_off(int id) {
+void note_off() {
+    int id = 0;
     if (envelope_on) {
         notes[id]->released = 1;
     } else {

@@ -64,7 +64,7 @@ void set_resolution(int new_resolution);
 void set_voice(struct Voice voice);
 double get_freq(int key_n);
 int note_on(double freq);
-void note_off(int id);
+void note_off(void);
 
 int scroll_counter;
 double output_volume;
