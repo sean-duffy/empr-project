@@ -57,7 +57,6 @@ void CAN_IRQHandler(void) {
         if (message.is_midi) {
             if (message.midi_data.channel == channel_playing) {
                 if (message.midi_data.volume == 0) {
-                    note_off();
                     l = sprintf(serial_print_line, "OFF: %d\n\r", message.midi_data.note);
                     debug_print(serial_print_line, l);
                     note_off();
@@ -110,7 +109,7 @@ void main() {
     serial_init();
     set_resolution(RESOLUTION);
    
-    //debug_print("set_voice_id", strlen("set_voice_id"));
+    debug_print("set_voice_id", strlen("set_voice_id"));
 
     set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
 
