@@ -49,6 +49,13 @@ void SysTick_Handler(void) {
 	
 	output_value = 0;
 
+    if (scroll_counter > 30000) {
+        scroll_counter = 0;
+        scroll_first_line(&I2CConfigStruct, first_line, strlen(first_line));
+    } else {
+        scroll_counter++;
+    }
+
     int i;
     for(i = 0; i < NOTES_N; i ++){
 
