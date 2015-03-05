@@ -52,7 +52,7 @@ void CAN_IRQHandler(void) {
         if (message.is_midi) {
             if (message.midi_data.channel == channel_playing) {
                 if (message.midi_data.volume == 0) {
-                    note_off(0);
+                    note_off();
                 } else {
                     note_on(get_freq(message.midi_data.note));
                 }
@@ -86,7 +86,7 @@ void main() {
     while(1){
         note_on(get_freq(note--));
         for(xx = 0; xx<700000; xx++){}
-        note_off(0);
+        note_off();
         for(xx = 0; xx<500000; xx++){}
     }
 
