@@ -73,22 +73,22 @@ extern void EINT3_IRQHandler() {
     i2cWrite(LPC_I2C1, keypadAddr, data, 1);
     GPIO_ClearInt(0, 0x00800000);
 
-    if (readChar == '#' && output_volume < 0.9) {
+    if (readChar == '9' && output_volume < 0.9) {
         output_volume += 0.1;
-    } else if (readChar == '*' && output_volume > 0.1) {
+    } else if (readChar == '#' && output_volume > 0.1) {
         output_volume -= 0.1;
     }
 
-    if (readChar == '9' && channel_playing < 15) {
+    if (readChar == '7' && channel_playing < 15) {
         channel_playing += 1;
-    } else if (readChar == '7' && channel_playing > 1) {
+    } else if (readChar == '*' && channel_playing > 1) {
         channel_playing -= 1;
     }
 
-    if (readChar == '6' && voice_playing < 6) {
+    if (readChar == '8' && voice_playing < 6) {
         voice_playing += 1;
         set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
-    } else if (readChar == '4' && voice_playing > 1) {
+    } else if (readChar == '0' && voice_playing > 1) {
         voice_playing -= 1;
         set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
     }
