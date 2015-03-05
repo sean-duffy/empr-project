@@ -40,9 +40,6 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
                     break;
                 default:
                     if(count > 2){
-                        free(ret->text_data.channel[count-2]);
-                        ret->text_data.channel[count-2] = (char*) calloc(30, sizeof(char));
-                        strcpy(ret->text_data.channel[count-2], concat);
                 }
             } 
 
