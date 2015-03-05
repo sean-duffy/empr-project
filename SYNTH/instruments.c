@@ -20,10 +20,12 @@ void init_voice_1(double wave_buf_1[], double wave_buf_2[]){
     
     voice_1.delay = len_in_ms(200);
 
-    voice_1.envelope_on = 1;
+    voice_1.envelope_on = 0;
 
+    voice_1.lfo_on = 0;
     voice_1.lfo_buf = wave_buf_2;
     voice_1.lfo_freq = 15; //Hz
+    voice_1.lfo_mix = 0.3;
 }
 
 
@@ -45,6 +47,7 @@ void init_voice_2(double wave_buf_1[], double wave_buf_2[]){
 
     voice_2.envelope_on = 1;
 
+    voice_2.lfo_on = 1;
     voice_2.lfo_buf = wave_buf_2;
     voice_2.lfo_freq = 10; //Hz
 }
@@ -68,8 +71,9 @@ void init_voice_3(double wave_buf_1[], double wave_buf_2[]){
 
     voice_3.envelope_on = 1;
 
+    voice_3.lfo_on = 1;
     voice_3.lfo_buf = wave_buf_2;
-    voice_3.lfo_freq = 5; //Hz
+    voice_3.lfo_freq = 20; //Hz
 }
 
 

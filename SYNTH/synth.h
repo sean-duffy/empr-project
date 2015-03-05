@@ -13,7 +13,7 @@
 #define VOICE_STRUCT_GUARD
 
 #define RESOLUTION 360
-#define RATE 0.00974999
+#define RATE 0.01028662165
 #define LFO_RATE 0.0005
 #define ADSR_RATE 40
 
@@ -34,8 +34,10 @@ struct Voice {
     int delay;
 
     //LFO
+    int lfo_on;
     double *lfo_buf;
     double lfo_freq;
+    double lfo_mix;
 
 };
 

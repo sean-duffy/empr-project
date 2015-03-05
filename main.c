@@ -26,7 +26,7 @@ struct CAN_return_data message;
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 uint8_t channel_playing = 1;
-int voice_playing = 6;
+int voice_playing = 1;
 char status_string[16];
 char space_string[] = "                ";
 char *first_line;
@@ -55,9 +55,9 @@ void CAN_IRQHandler(void) {
         if (message.is_midi) {
             if (message.midi_data.channel == channel_playing) {
                 if (message.midi_data.volume == 0) {
-                    note_off();
+                    //note_off();
                 } else {
-                    note_on(get_freq(message.midi_data.note));
+                    //note_on(get_freq(message.midi_data.note));
                 }
             }
             message.is_midi = 0;
@@ -85,7 +85,7 @@ extern void EINT3_IRQHandler() {
         channel_playing -= 1;
     }
 
-    if (readChar == '6' && voice_playing < 6) {
+    if (readChar == '6' && voice_playing < 3) {
         voice_playing += 1;
         set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
     } else if (readChar == '4' && voice_playing > 1) {
@@ -99,7 +99,6 @@ extern void EINT3_IRQHandler() {
 
 void main() {
     serial_init();
-    set_resolution(RESOLUTION);
    
     debug_print("set_voice_id", strlen("set_voice_id"));
 
@@ -128,6 +127,8 @@ void main() {
     write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 
     keypadInit(LPC_I2C1, keypadAddr);
+
+    note_on(get_freq(60));
 
     while (1);
 }

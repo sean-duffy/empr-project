@@ -15,7 +15,6 @@
 int duration_passed = 0;
 int resolution = RESOLUTION;
 
-int envelope_on;
 double output_volume = 0.9;
 
 //ADSR
@@ -29,6 +28,9 @@ char *first_line;
 
 double output_value = 0;
 int output_delay = 0;
+int output_lfo_on = 0;
+double output_lfo_mix = 1;
+int output_envelope_on = 0;
 
 //LFO
 double *lfo_wave;
@@ -62,9 +64,19 @@ void SysTick_Handler(void) {
         if (notes[i]->tick >= resolution) { notes[i]->tick = 0;} // Modulus tick by resolution
         if (notes[i]->lfo_tick>= resolution) { notes[i]->lfo_tick = 0;} // modulus lfo tick by resolution
 
-        notes[i]->value = wave[(int) floor(notes[i]->tick)] * lfo_wave[(int) floor(notes[i]->lfo_tick)] * notes[i]->active;
+        
+        double wave_val = wave[(int) floor(notes[i]->tick)] * notes[i]->active;
+        double lfo_on_wave_val = wave_val - wave_val * lfo_wave[(int) floor(notes[i]->lfo_tick)] * output_lfo_mix;
+
+        if(output_lfo_on){
+            wave_val = lfo_on_wave_val;         
+        } else {
+            wave_val = wave_val;
+        }
 
         
+        //notes[i]->value = wave_val; 
+
         if (notes[i]->envelope < 0) {
             notes[i]->envelope = 0;
         }
@@ -75,39 +87,46 @@ void SysTick_Handler(void) {
         }
 
         // ADSR
-        if (envelope_on){
-            if (notes[i]->released == 0){
-                if (notes[i]->ADSR_stage == 0){ // Attack Stage
-                    notes[i]->envelope += output_attack_inc;
-                } else if (notes[i]->ADSR_stage == 1){ // Delay Stage
-                    notes[i]->envelope += output_decay_dec;
-                } else { // Sustain
-                    notes[i]->envelope = output_sustain_level;
-                }
-                
-                // Recheck Stages
-                if (notes[i]->envelope > 1) { 
-                    notes[i]->ADSR_stage = 1; 
-                    notes[i]->envelope = 1;
-                }
-                
-                if ( notes[i]->ADSR_stage == 1 && notes[i]->envelope < output_sustain_level ) {
-                    notes[i]->ADSR_stage = 2;
-                }
-                
-            } else if (note_1.envelope > 0) { // Release
-                if (notes[i]->envelope > output_sustain_level) {
-                    notes[i]->envelope = output_sustain_level;
-                }
-                notes[i]->envelope += output_release_dec;
-            } else {
-                notes[i]->active = 0; // Endes the note once it is released and finished
-            }
+        double env = notes[i]->envelope;
 
-            notes[i]->tick += notes[i]->inc;
-            notes[i]->lfo_tick += lfo_inc;
-            output_value += notes[i]->envelope * notes[i]->value;
+        if (notes[i]->released == 0){
+            if (notes[i]->ADSR_stage == 0){ // Attack Stage
+                env += output_attack_inc;
+            } else if (notes[i]->ADSR_stage == 1){ // Delay Stage
+                env += output_decay_dec;
+            } else { // Sustain
+                env = output_sustain_level;
+            }
+            
+            // Recheck Stages
+            if (notes[i]->envelope > 1) { 
+                notes[i]->ADSR_stage = 1; 
+                env = 1;
+            }
+            
+            if ( notes[i]->ADSR_stage == 1 && env < output_sustain_level ) {
+                notes[i]->ADSR_stage = 2;
+            }
+            
+        } else if (env > 0) { // Release
+            if (env > output_sustain_level) {
+                env = output_sustain_level;
+            }
+            env += output_release_dec;
+        } else {
+            notes[i]->active = 0; // Endes the note once it is released and finished
         }
+
+        notes[i]->tick += notes[i]->inc;
+        notes[i]->lfo_tick += lfo_inc;
+
+        if(!output_envelope_on){
+            env = 1;
+        }
+
+        notes[i]->envelope = env;
+        notes[i]->value = wave_val;
+        output_value += env * wave_val;
     }
 	
     output_value = ((output_volume * output_value)+1) * 400; 
@@ -141,7 +160,7 @@ int note_on(double freq) {
 		notes[id]->inc = (double) RATE * freq;
 		notes[id]->value = 0;
 		
-		if(envelope_on){
+		if(output_envelope_on){
 			notes[id]->envelope = 0;
 			notes[id]->ADSR_stage = 0;
 		}
@@ -151,7 +170,7 @@ int note_on(double freq) {
 
 void note_off() {
     int id = 0;
-    if (envelope_on) {
+    if (output_envelope_on) {
         notes[id]->released = 1;
     } else {
         notes[id]->envelope = 0;
@@ -167,12 +186,14 @@ double get_freq(int key_n) {
 void set_voice(struct Voice voice) {
     wave = voice.osc_1_buf;
 
+    output_envelope_on = voice.envelope_on;
     output_delay = voice.delay;
+    output_lfo_on = voice.lfo_on;
+    output_lfo_mix = voice.lfo_mix;
     lfo_wave = voice.lfo_buf;
     lfo_inc = RATE * voice.lfo_freq;
 
 	//Setup ADSR
-    envelope_on = voice.envelope_on;
 	output_sustain_level = voice.sustain_level;
     output_attack_inc =  + (float) 1/voice.attack_len ;
 	output_decay_dec =  - (float) (1-voice.sustain_level)/voice.decay_len ;
