@@ -7,6 +7,10 @@
 #include "LPC17xx.h"
 #include "../I2C/i2c.h"
 
+int debu = 1;
+#define debug_print(n, x) if(debu) { write_serial(n, x); write_serial("\n\r", 2); }
+#define debug_print_nnl(n, x) if(debu) { write_serial(n, x); }
+
 int first_line_scroll_i = 0;
 int second_line_scroll_i = 0;
 I2C_M_SETUP_Type I2CConfigStruct;
@@ -17,7 +21,7 @@ int map_char(char c) {
     } else if (c == 19) {
         return ' ';
     } else if (c == '_') {
-        return 49;
+        return 9;
     } else if (c < 91) {
         return c + 128;
     } else {
@@ -53,6 +57,7 @@ void lcd_write_bytes(I2C_M_SETUP_Type * i2c_config, uint8_t bytes[], int length)
     i2c_config->tx_data = bytes;
     i2c_config->tx_length = length;
     I2C_MasterTransferData(LPC_I2C1, i2c_config, I2C_TRANSFER_POLLING);
+    isBusyWait(LPC_I2C1, I2CConfigStruct.sl_addr7bit);
 }
 
 void lcd_write_message(I2C_M_SETUP_Type * i2c_config, char message[], int length) {
@@ -95,10 +100,10 @@ void scroll_second_line(I2C_M_SETUP_Type * i2c_config, char *line_text, int size
 }
 
 void scroll_first_line(I2C_M_SETUP_Type * i2c_config, char *line_text, int size) {
-    if (second_line_scroll_i >= size) {
-        second_line_scroll_i = 0;
+    if (first_line_scroll_i >= size) {
+        first_line_scroll_i = 0;
     }
 
-    write_first_line(i2c_config, &line_text[second_line_scroll_i], size-second_line_scroll_i);
-    second_line_scroll_i++;
+    write_first_line(i2c_config, &line_text[first_line_scroll_i], size-first_line_scroll_i);
+    first_line_scroll_i++;
 }

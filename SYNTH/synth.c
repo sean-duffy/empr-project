@@ -14,6 +14,10 @@
 #include "synth.h"
 #include "LCD/lcd.h"
 
+#define debug_print(n, x) if(deb) { write_serial(n, x); write_serial("\n\r", 2); }
+#define debug_print_nnl(n, x) if(deb) { write_serial(n, x); }
+int deb = 1;
+
 int duration_passed = 0;
 int resolution;
 uint32_t note_length = 500;
@@ -48,9 +52,6 @@ double mix_inc = 0.00002;
 double osc_mix;
 double output_volume = 0.9;
 
-int scroll_counter = 0;
-char *first_line;
-
 void SysTick_Handler(void) {
     double output_value;
 
@@ -60,13 +61,6 @@ void SysTick_Handler(void) {
 
     if (osc_2_tick >= resolution) {
         osc_2_tick = 0;
-    }
-
-    if (scroll_counter > 30000) {
-        scroll_counter = 0;
-        scroll_first_line(&I2CConfigStruct, first_line, strlen(first_line));
-    } else {
-        scroll_counter++;
     }
 
     //if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
@@ -83,7 +77,6 @@ void SysTick_Handler(void) {
     //osc_mix = ((double) output_volume / 10.0) * (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
     osc_mix = output_volume * output_envelope * (osc_1_value*osc_1_mix+ osc_2_value*osc_2_mix);
     output_value = (int) floor((osc_mix + 1.0) * 300);
-
     DAC_UpdateValue(LPC_DAC, output_value * note_mute);
 
     // Attack
@@ -119,6 +112,7 @@ void init_dac(void) {
 }
 
 void note_on(double freq) {
+    //debug_print("note on\r\n", 9);
     released = 0;
     osc_1_inc = 0.00974999 * freq; // Bit rate callibrated to middle C
     osc_2_inc = osc_1_inc;
@@ -131,6 +125,7 @@ void note_on(double freq) {
 }
 
 void note_off(void) {
+    //debug_print("note off\r\n", 10);
     if (envelope_on) {
         released = 1;
     } else {
@@ -139,12 +134,14 @@ void note_off(void) {
 }
 
 double get_freq(int key_n) {
+    //debug_print("getfreq\r\n", 9);
     // Convert piano key number to frequency
     double f = pow(2, (key_n - 69)/ 12.0) * 440;
     return f;
 }
 
 void set_voice(struct Voice voice) {
+    //debug_print("setvoice\r\n", 10);
     osc_1_mix = voice.osc_1_mix;
     osc_2_mix = voice.osc_2_mix;
     osc_1_buf = voice.osc_1_buf;
@@ -156,5 +153,6 @@ void set_voice(struct Voice voice) {
 }
 
 void set_resolution(int new_resolution) {
+    //debug_print("setres\r\n", 8);
     resolution = new_resolution;
 }

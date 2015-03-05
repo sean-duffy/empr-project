@@ -18,8 +18,11 @@
 #include "I2C/i2c.h"
 #include "LCD/lcd.h"
 #include "keypad/keypad.h"
+#include "LED/led.h"
+#include "RIT/rit.h"
 
 
+int ledValue = 0;
 int debug = 1;
 CAN_MSG_Type RXMsg;
 struct CAN_return_data message;
@@ -27,16 +30,29 @@ struct CAN_return_data message;
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 uint8_t channel_playing = 1;
-int voice_playing = 6;
+int voice_playing = 5;
 char status_string[16];
+char status_string_formatter[] = "Ch:%2d  In: %d  #%f";
 char space_string[] = "                ";
-char *first_line = NULL;
+char *first_line;
+
+#define FIRSTLINELEN 16
+//char firstLine[FIRSTLINELEN] = "Awaiting name ";
+
+
 
 double wave_buf_1[RESOLUTION];
 double wave_buf_2[RESOLUTION];
 
 
-
+/*void clearFirstLine()
+{
+    int c;
+    for(c = 0; c < FIRSTLINELEN; c++)
+    {
+        firstLine[c] = '\0';
+    }
+}*/
 
 
 
@@ -96,6 +112,24 @@ char recPayload[100];
 
 void sendSongTitle()
 {
+/*
+    if(firstLine == NULL)
+    {
+        char toSend[] = {0xFF, 19, NAMEDATA, '(', 'W', 'a', 'i', 't', 'i', 'n', 'g', ' ', 'f', 'o', 'r', ' ', 'n', 'a', 'm', 'e', ')', '\0', 0xEE};
+        write_serial(toSend, 23);
+    }
+    else
+    {
+        char toSend1[] = {0xFF, strlen(firstLine), NAMEDATA};
+        char toSend2[] = {0xEE};
+
+        write_serial(toSend1, 3);
+        write_serial(firstLine, strlen(firstLine));
+        write_serial(toSend2, 1);
+    }
+
+*/
+
     if(first_line == NULL)
     {
         char toSend[] = {0xFF, 19, NAMEDATA, '(', 'W', 'a', 'i', 't', 'i', 'n', 'g', ' ', 'f', 'o', 'r', ' ', 'n', 'a', 'm', 'e', ')', '\0', 0xEE};
@@ -103,38 +137,14 @@ void sendSongTitle()
     }
     else
     {
-        int nameLen;
-        //char* traverse = first_line;
-        //while(*first_line != '\0')
-        //{
-        //    nameLen++;
-        //}
-        char* traverse;
-        for(traverse = first_line; *traverse; ++traverse)
-        {
-             nameLen++;
-        }
-        char toSend[nameLen + 4];// = {0xFF, 15, NAMEDATA, 'T', 'e', 's', 't', ' ', 'S', 'o', 'n', 'g', ' ', 'N', 'a', 'm', 'e', '\0', 0xEE};
-        
-        int i;
-        toSend[0] = 0xFF;
-        toSend[1] = nameLen; //payload size
-        toSend[2] = NAMEDATA;
-        //for(i = 0; i != nameLen - 1; i++)
-        //{
-       //     toSend[i+3] = *(first_line + i);
-        //}
-        int k = 0;
-        char* traverse2;
-        for(traverse2 = first_line; *traverse2; ++traverse)
-        {
-             toSend[3 + k++] = *traverse2;
-        }
+        char toSend1[] = {0xFF, strlen(first_line), NAMEDATA};
+        char toSend2[] = {0xEE};
 
-        toSend[nameLen] = 0xEE;
-
-        write_serial(toSend, nameLen + 4);
+        write_serial(toSend1, 3);
+        write_serial(first_line, strlen(first_line));
+        write_serial(toSend2, 1);
     }
+
 }
 
 void sendVol()
@@ -178,21 +188,6 @@ void UART_IntReceive(void)
                  }
                  // no more data
                  else {
-                        /*int loopCount = 0;
-                        while(loopCount < UART_RING_BUFSIZE)
-                        {
-                            write_serial(&rb.rx[loopCount++], 2);     
-                        }*/
-                        //write_serial(&rb.rx[rb.rx_head], 2);
-
-                        /*if(serialCount > 10)
-                        {
-                            write_serial((char*)serialArray, serialCount);
-                            serialCount = 0;
-                        }
-                        write_serial("\r\n", 2);
-                        break;*/
-
                         if(serialArray[0] == 0xFF && serialArray[serialCount-1] == 0xEE)
                         {
                             uint8_t dispChange = 0;
@@ -248,7 +243,7 @@ void UART_IntReceive(void)
 
                             if(dispChange)
                             {
-                                sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
+                                sprintf(status_string, status_string_formatter, channel_playing, voice_playing, output_volume * 10.0);
                                 write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
                             }
                             serialCount = 0;
@@ -298,7 +293,7 @@ void UART_IntErr(uint8_t bLSErrType)
  {
          uint8_t test;
          // Loop forever
-         debug_print("UART ERROR\r\n", 12);
+         set_binary_number(1);
          while (1){
                  // For testing purpose
                  test = bLSErrType;
@@ -336,7 +331,20 @@ void UART0_IRQHandler(void)
          }
  }
 
+extern void RIT_IRQHandler()
+{
+    clear_interrupt_flag();
+    scroll_first_line(&I2CConfigStruct, first_line, strlen(first_line));
+    //scroll_first_line(&I2CConfigStruct, firstLine, strlen(firstLine));
 
+    if(ledValue == 14)
+	{
+		ledValue = 0;
+	}
+	
+	set_binary_number(ledValue++);  
+	
+}
 
 /*Personal ends here*/
 
@@ -346,16 +354,54 @@ void CAN_IRQHandler(void) {
     if((IntStatus>>0)&0x01) {
         CAN_ReceiveMsg(LPC_CAN2, &RXMsg);
         interpret_message(&RXMsg, 1, &message);
-
+        
         if (message.done) {
-            free(first_line);
+            NVIC_DisableIRQ(RIT_IRQn);
+            set_binary_number(16);
+            /*clearFirstLine();
+            //int currStrLen = 0;
+            int h = 0, d = 0, offset = 0;
+
+            while(message.text_data.track[h + offset] && message.text_data.track[h + offset] != '.')
+            {
+                if(message.text_data.track[h + offset] >= 32 && message.text_data.track[h + offset] <= 122)
+                {
+                    firstLine[h] = message.text_data.track[h + offset];
+                    h++;
+                }
+                else
+                {
+                    offset++;
+                }
+                //currStrLen++;
+            }
+
+            //firstLine[h + d + 1] = ' ';
+            //firstLine[h + d + 2] = '-';
+            //firstLine[h + d + 3] = ' ';
+
+            //while(message.text_data.bpm[r])
+            //{
+               // firstLine[h + d + 4 + r] = message.text_data.bpm[r];
+               // r++;
+            //}
+
+            firstLine[h + d + 1] = '\0';
+
+            message.done = 0;
+            write_first_line(&I2CConfigStruct, firstLine, strlen(firstLine));
+            set_binary_number(0);*/
+            
             first_line = (char *) calloc(strlen(message.text_data.track) - 12 + 16 + 3 + strlen(message.text_data.bpm), sizeof(char));
             strcpy(first_line, space_string);
             strncat(first_line, message.text_data.track, strlen(message.text_data.track) - 12);
             strcat(first_line, " - ");
             strcat(first_line, message.text_data.bpm);
-            //sendSongTitle();
+
             message.done = 0;
+
+            NVIC_EnableIRQ(RIT_IRQn);
+            sendSongTitle();
         }
 
         if (message.is_midi) {
@@ -372,7 +418,7 @@ void CAN_IRQHandler(void) {
 }
 
 extern void EINT3_IRQHandler() {
-	char readChar = keypadRead(LPC_I2C1, keypadAddr);
+	/*char readChar = keypadRead(LPC_I2C1, keypadAddr);
 
     // Clear interrupt
     uint8_t data[] = {0b00001111};
@@ -405,7 +451,43 @@ extern void EINT3_IRQHandler() {
         sendInst();
     }
 
-    sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
+    sprintf(status_string, status_string_formatter, channel_playing, voice_playing, output_volume * 10.0);
+    write_second_line(&I2CConfigStruct, status_string, strlen(status_string));*/
+
+char readChar = keypadRead(LPC_I2C1, keypadAddr);
+
+    // Clear interrupt
+    uint8_t data[] = {0b00001111};
+    i2cWrite(LPC_I2C1, keypadAddr, data, 1);
+    GPIO_ClearInt(0, 0x00800000);
+
+    if (readChar == '9' && output_volume < 0.9) {
+        output_volume += 0.1;
+        sendVol();
+    } else if (readChar == '#' && output_volume > 0.1) {
+        output_volume -= 0.1;
+        sendVol();
+    }
+
+    if (readChar == '7' && channel_playing < 15) {
+        channel_playing += 1;
+        sendChan();
+    } else if (readChar == '*' && channel_playing > 1) {
+        channel_playing -= 1;
+        sendChan();
+    }
+
+    if (readChar == '8' && voice_playing < 6) {
+        voice_playing += 1;
+        set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
+        sendInst();
+    } else if (readChar == '0' && voice_playing > 1) {
+        voice_playing -= 1;
+        set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
+        sendInst();
+    }
+
+    sprintf(status_string, status_string_formatter, channel_playing, voice_playing, output_volume * 10.0);
     write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 }
 
@@ -413,9 +495,10 @@ extern void EINT3_IRQHandler() {
 void main() {
     serial_init();
     set_resolution(RESOLUTION);
-
+    leds_init();
+    init_ritimer(20);
+    NVIC_SetPriority(RIT_IRQn, 50);
     set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
-
 	i2cInit(LPC_I2C1, 100000);
 
     init_dac();
@@ -426,7 +509,7 @@ void main() {
     I2CConfigStruct.retransmissions_max = 3;
     I2CConfigStruct.sl_addr7bit = 59;
 
-    uint8_t lcd_init[] = {0x00, 0x35, 0x9F, 0x34, 0x0C, 0x02};
+    uint8_t lcd_init[] = {0x00, 0x35, 0x00, 0x9F, 0x00, 0x34, 0x00, 0x0C, 0x00, 0x02};
     lcd_write_bytes(&I2CConfigStruct, lcd_init, sizeof(lcd_init));
 
     uint8_t clear[] = {0x00, 0x01};
@@ -434,12 +517,13 @@ void main() {
 
     isBusyWait(LPC_I2C1, I2CConfigStruct.sl_addr7bit);
 
-    sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
+    sprintf(status_string, status_string_formatter, channel_playing, voice_playing, output_volume * 10.0);
     write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
+    isBusyWait(LPC_I2C1, I2CConfigStruct.sl_addr7bit);
 
     keypadInit(LPC_I2C1, keypadAddr);
-    
-    //sendSongTitle();    
-    
+    //write_first_line(&I2CConfigStruct, firstLine, strlen(firstLine));
+    isBusyWait(LPC_I2C1, I2CConfigStruct.sl_addr7bit);  
+    NVIC_EnableIRQ(RIT_IRQn);
     while (1);
 }

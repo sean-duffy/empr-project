@@ -23,7 +23,9 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
 
             memset(concat, 0, 100);
             concat[0] = '\0';
-        } else if ((received_message->id >> 24) == 1) {
+        }
+        
+        else if ((received_message->id >> 24) == 1) {
             //End packet
             count ++;
             i = strlen(concat);
@@ -40,9 +42,11 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
                     break;
                 default:
                     if(count > 2){
-                        free(ret->text_data.channel[count-2]);
-                        ret->text_data.channel[count-2] = (char*) calloc(30, sizeof(char));
-                        strcpy(ret->text_data.channel[count-2], concat);
+                        //write_serial("hit\r\n", 5);
+                        //free(ret->text_data.channel[count-2]);
+                        //ret->text_data.channel[count-2] = (char*) calloc(30, sizeof(char));
+                        //strcpy(ret->text_data.channel[count-2], concat);
+                        //write_serial("hit2\r\n", 6);
                 }
             } 
 
