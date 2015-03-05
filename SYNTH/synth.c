@@ -130,7 +130,7 @@ void SysTick_Handler(void) {
         output_value += env * wave_val;
     }
 	
-    output_value = ((output_volume * output_value)+1) * 400; 
+    output_value = ((output_volume * output_value)+1) * 300; 
 	DAC_UpdateValue(LPC_DAC, output_value);
 }
 
