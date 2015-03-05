@@ -55,9 +55,9 @@ void CAN_IRQHandler(void) {
         if (message.is_midi) {
             if (message.midi_data.channel == channel_playing) {
                 if (message.midi_data.volume == 0) {
-                    //note_off();
+                    note_off();
                 } else {
-                    //note_on(get_freq(message.midi_data.note));
+                    note_on(get_freq(message.midi_data.note));
                 }
             }
             message.is_midi = 0;
@@ -105,12 +105,9 @@ void main() {
     set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
 
 	i2cInit(LPC_I2C1, 100000);
-    serial_init();
 
     init_dac();
     init_can(250000, 0);
-
-    SysTick_Config(2400);
 
     I2CConfigStruct.retransmissions_max = 3;
     I2CConfigStruct.sl_addr7bit = 59;
@@ -126,9 +123,18 @@ void main() {
     sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
     write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 
+    SysTick_Config(2400);
+
     keypadInit(LPC_I2C1, keypadAddr);
 
-    note_on(get_freq(60));
+    /*
+    int xx;
+    while(1){
+        note_on(get_freq(60));
+        for(xx = 0; xx < 500; xx++){}
+        note_off();
+        for(xx = 0; xx < 10000; xx++){}
+    }*/
 
     while (1);
 }
