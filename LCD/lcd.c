@@ -17,7 +17,7 @@ int map_char(char c) {
     } else if (c == 19) {
         return ' ';
     } else if (c == '_') {
-        return 49;
+        return 160;
     } else if (c < 91) {
         return c + 128;
     } else {
