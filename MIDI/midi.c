@@ -17,6 +17,7 @@ void interpret_message(CAN_MSG_Type* received_message, uint8_t debug, struct CAN
     if (received_message->len == 0) {
         if ((received_message->id >> 25) == 1) {
         //Start packet
+            note_off();
             if(count == 0) { 
                 ret->done = 0;
             }
