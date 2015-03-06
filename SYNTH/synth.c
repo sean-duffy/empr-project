@@ -69,10 +69,6 @@ void SysTick_Handler(void) {
         scroll_counter++;
     }
 
-    //if (osc_1_mix >= 1 || (osc_1_mix <= 0 && mix_inc < 0)) {
-    //    mix_inc *= -1;
-    //}
-
     osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
     osc_2_value = osc_2_buf[(int) floor(osc_2_tick)];
 
@@ -80,7 +76,6 @@ void SysTick_Handler(void) {
         output_envelope = 0;
     }
 
-    //osc_mix = ((double) output_volume / 10.0) * (osc_1_value*osc_1_mix*output_envelope + osc_2_value*osc_2_mix);
     osc_mix = output_volume * output_envelope * (osc_1_value*osc_1_mix+ osc_2_value*osc_2_mix);
     output_value = (int) floor((osc_mix + 1.0) * 300);
 
@@ -98,9 +93,6 @@ void SysTick_Handler(void) {
 
     osc_1_tick += osc_1_inc;
     osc_2_tick += osc_2_inc;
-
-    //osc_1_mix += mix_inc;
-    //osc_2_mix -= mix_inc;
 }
 
 void init_dac(void) {
