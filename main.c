@@ -64,7 +64,6 @@ void CAN_IRQHandler(void) {
                     note_on(get_freq(message.midi_data.note));
                     l = sprintf(serial_print_line, "ON: %d\n\r", message.midi_data.note);
                     debug_print(serial_print_line, l);
-                    note_on(get_freq(message.midi_data.note));
                 }
             }
 
