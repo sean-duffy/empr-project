@@ -1,5 +1,8 @@
 import sys, pygame, io, fcntl, os, re
 
+notes = ['C', 'C#', 'D', 'D#', 'E',
+         'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
 size = width, height = 1680, 800
 speed = 2
 block_height = 10
@@ -8,8 +11,12 @@ colours = [(163, 21, 141), (237, 15, 37), (238, 59, 63),
            (246, 129, 45), (249, 168, 48), (255, 225, 59),
            (112, 193, 80), (2, 167, 101), (5, 171, 173),
            (3, 100, 178), (34, 59, 153), (92, 38, 143)]
+
 blocks = []
 current_note = None
+
+track_name = ''
+bpm = ''
 
 pygame.init()
 screen = pygame.display.set_mode(size)
@@ -19,6 +26,11 @@ flags = fcntl.fcntl(stream, fcntl.F_GETFL) # get current p.stdout flags
 fcntl.fcntl(stream, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
 r = pygame.Rect(width - 30, height / 2, 30, block_height)
+
+my_font = pygame.font.SysFont("Arial", 20)
+track_name_text = my_font.render('', True, (255, 255, 255))
+bpm_text = my_font.render('', True, (255, 255, 255))
+note_text = my_font.render('', True, (255, 255, 255))
 
 def midi_to_note(n):
     octave = n / 12
@@ -34,26 +46,37 @@ while 1:
             stream.close()
             sys.exit()
 
+    screen.fill(black)
+
     try:
         line = stream.readline()
-        line_match = re.match('(ON|OFF): (\d*)', line)
-        if line_match:
-            action, midi_note = line_match.groups()
-            if current_note != None:
-                blocks.append(current_note)
-                current_note = None
-            if action == 'ON':
-                note, octave = midi_to_note(int(midi_note))
-                try:
-                    c = colours[note]
-                except IndexError:
-                    pass
-                current_note = [c, pygame.Rect(width, height - (octave * 80 + note * block_height), 0, block_height)]
+        line_match = re.match('(ON|OFF|BPM|NAME): (.*)$', line)
+        if line.strip() != '':
+            if line_match:
+                action, midi_note = line_match.groups()
+                if current_note != None:
+                    blocks.append(current_note)
+                    current_note = None
+                if action == 'ON':
+                    note, octave = midi_to_note(int(midi_note))
+                    try:
+                        c = colours[note]
+                    except IndexError:
+                        pass
+                    current_note = [c, pygame.Rect(width, height - (octave * 80 + note * block_height), 0, block_height)]
+
+                    note_text = my_font.render(str(notes[note]) + str(octave) + ' - ' + midi_note, True, (255, 255, 255))
+                elif action == 'BPM':
+                    bpm_text = my_font.render(midi_note, True, (255, 255, 255))
+                    print action, midi_note
+                elif action == 'NAME':
+                    track_name_text = my_font.render(midi_note, True, (255, 255, 255))
+                    print action, midi_note
+            else:
+                print line
 
     except IOError:
         pass
-
-    screen.fill(black)
 
     if current_note is not None:
         block_colour, block_rect = current_note
@@ -71,5 +94,8 @@ while 1:
             pygame.draw.rect(screen, block_colour, block_rect)
             block[1] = block_rect.move(speed * -1, 0)
 
+    screen.blit(note_text, (10, 770))
+    screen.blit(bpm_text, (30, 44))
+    screen.blit(track_name_text, (30, 20))
     pygame.draw.rect(screen, (255, 255, 255), r)
     pygame.display.flip()

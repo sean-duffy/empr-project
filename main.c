@@ -30,7 +30,7 @@ int voice_playing = 6;
 char status_string[16];
 char space_string[] = "                ";
 char *first_line;
-char serial_print_line[10];
+char serial_print_line[40];
 
 double wave_buf_1[RESOLUTION];
 double wave_buf_2[RESOLUTION];
@@ -38,6 +38,7 @@ double wave_buf_2[RESOLUTION];
 void CAN_IRQHandler(void) {
     int debug = 1;
     uint8_t IntStatus = CAN_IntGetStatus(LPC_CAN2);
+    int l;
 
     if((IntStatus>>0)&0x01) {
         CAN_ReceiveMsg(LPC_CAN2, &RXMsg);
@@ -45,15 +46,18 @@ void CAN_IRQHandler(void) {
 
         if (message.done) {
             first_line = (char *) calloc(strlen(message.text_data.track) - 12 + 16 + 3 + strlen(message.text_data.bpm), sizeof(char));
+
             strcpy(first_line, space_string);
             strncat(first_line, message.text_data.track, strlen(message.text_data.track) - 12);
             strcat(first_line, " - ");
             strcat(first_line, message.text_data.bpm);
 
+            l = sprintf(serial_print_line, "NAME: %s\n\r", first_line);
+            debug_print(serial_print_line, l);
+
             message.done = 0;
         }
 
-        int l;
         if (message.is_midi) {
             if (message.midi_data.channel == channel_playing) {
                 if (message.midi_data.volume == 0) {
