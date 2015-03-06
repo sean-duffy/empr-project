@@ -28,23 +28,9 @@ def midi_to_note(n):
         note = n
     return (note, octave)
 
-stream = open('/dev/ttyACM0')
-flags = fcntl.fcntl(stream, fcntl.F_GETFL) # get current p.stdout flags
-fcntl.fcntl(stream, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-
-r = pygame.Rect(width - 30, height / 2, 30, block_height)
-
-def midi_to_note(n):
-    octave = n / 12
-    if octave > 1:
-        note = n % octave
-    else:
-        note = n
-    return (note, octave)
-
 while 1:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT: 
             stream.close()
             sys.exit()
 
