@@ -80,8 +80,10 @@ extern void EINT3_IRQHandler() {
     }
 
     if (readChar == '7' && channel_playing < 15) {
+        note_off();
         channel_playing += 1;
     } else if (readChar == '*' && channel_playing > 1) {
+        note_off();
         channel_playing -= 1;
     }
 
