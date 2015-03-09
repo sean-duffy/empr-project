@@ -82,7 +82,7 @@ while not done:
 			volumes[i] = 0
 		line = [0, 0, 0]
 	
-	print line
+	#print line
 	
 	for i in range (0, 48):
 		a = volumes[i]
