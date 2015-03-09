@@ -74,6 +74,8 @@ while not done:
 			volumes[index] = line[2]/400.0
 		else:
 			line = [0, 0, 0]
+			for i in range (0 ,48):
+				volumes[i] = 0
 			
 	except serial.SerialException:
 		for i in range (0 ,48):
