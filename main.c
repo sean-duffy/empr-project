@@ -55,9 +55,9 @@ void CAN_IRQHandler(void) {
         if (message.is_midi) {
             if (message.midi_data.channel == channel_playing) {
                 if (message.midi_data.volume == 0) {
-                    //note_off();
+                    note_off();
                 } else {
-                    //note_on(get_freq(message.midi_data.note));
+                    note_on(get_freq(message.midi_data.note));
                 }
             }
             message.is_midi = 0;
@@ -129,14 +129,5 @@ void main() {
 
     keypadInit(LPC_I2C1, keypadAddr);
 
-    /*
-    int xx;
-    while(1){
-        note_on(get_freq(60));
-        for(xx = 0; xx < 500; xx++){}
-        note_off();
-        for(xx = 0; xx < 10000; xx++){}
-    }*/
-    note_on(get_freq(60));
     while (1);
 }

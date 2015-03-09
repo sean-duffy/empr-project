@@ -133,7 +133,7 @@ void init_voice_5(double wave_buf_1[], double wave_buf_2[]){
 void init_voice_6(double wave_buf_1[], double wave_buf_2[]){
 
     //Apply effects
-    generate_square(wave_buf_1, RESOLUTION);
+    generate_triangle(wave_buf_1, RESOLUTION);
     generate_sawtooth(wave_buf_2, RESOLUTION);
 	
 	// Oscillator properties
