@@ -22,6 +22,7 @@ double output_attack_inc = 0;
 double output_decay_dec = 0;
 double output_sustain_level = 0;
 double output_release_dec = 0;
+
 double *wave;
 int scroll_counter = 0;
 char *first_line;

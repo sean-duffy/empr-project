@@ -60,23 +60,6 @@ struct Note {
 
 #endif
 
-#ifndef guard
-#define guard
-struct Note {
-		int active;
-        int released;
-        
-        double delay_tick;
-		
-        double tick;
-		double inc;
-        double value;
-        double envelope;
-        int ADSR_stage;
-};
-
-#endif
-
 void init_dac(void);
 int init_timer(void);
 void set_resolution(int new_resolution);
