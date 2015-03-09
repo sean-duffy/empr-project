@@ -3,64 +3,53 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lpc_types.h"
-#include "lpc17xx_pinsel.h"
-#include "lpc17xx_uart.h"
-#include "lpc17xx_dac.h"
-#include "LPC17xx.h"
-#include "lpc17xx_timer.h"
-
 #include "oscillator.h"
 #include "synth.h"
-#include "LCD/lcd.h"
+#include "wave_sim.h"
+#include "../LCD/lcd.h"
+#include "../UART/uart.h"
+
+#define debug_print(n, x) if(1) { write_serial(n, x); write_serial("\n\r", 2); }
+#define debug_print_nnl(n, x) if(1) { write_serial(n, x); }
 
 int duration_passed = 0;
-int resolution;
-uint32_t note_length = 500;
+int resolution = RESOLUTION;
 
-int released = 0;
-
-double osc_1_inc = 3;
-double osc_1_tick = 0;
-double *osc_1_buf;
-double osc_1_value;
-double osc_1_mix;
-
-int envelope_on;
-double output_envelope = 1;
-double output_attack_inc = 0;
-double output_release_inc = 0;
-
-double osc_2_inc = 3;
-double osc_2_tick = 0;
-double *osc_2_buf;
-double osc_2_value = 0;
-double osc_2_mix;
-
-double osc_3_inc = 30;
-double osc_3_tick = 0;
-double *osc_3_buf;
-double osc_3_value = 0;
-double osc_3_mix;
-
-int note_mute = 1;
-double mix_inc = 0.00002;
-double osc_mix;
 double output_volume = 0.9;
 
+//ADSR
+double output_attack_inc = 0;
+double output_decay_dec = 0;
+double output_sustain_level = 0;
+double output_release_dec = 0;
+
+double *wave;
 int scroll_counter = 0;
 char *first_line;
 
+double output_value = 0;
+int output_delay = 0;
+int output_lfo_on = 0;
+double output_lfo_mix = 1;
+int output_envelope_on = 0;
+
+//LFO
+double *lfo_wave;
+double lfo_inc;
+double lfo_tick;
+
+//Note structures
+struct Note note_1 = {0};
+struct Note note_2 = {0};
+struct Note *notes[NOTES_N] = {&note_1, &note_2};
+
+int get_free_note_id(){
+        return 0;
+}
+
 void SysTick_Handler(void) {
-    double output_value;
-
-    if (osc_1_tick >= resolution) {
-        osc_1_tick = 0;
-    }
-
-    if (osc_2_tick >= resolution) {
-        osc_2_tick = 0;
-    }
+	
+	output_value = 0;
 
     if (scroll_counter > 30000) {
         scroll_counter = 0;
@@ -69,31 +58,82 @@ void SysTick_Handler(void) {
         scroll_counter++;
     }
 
-    osc_1_value = osc_1_buf[(int) floor(osc_1_tick)];
-    osc_2_value = osc_2_buf[(int) floor(osc_2_tick)];
+    int i;
+    for(i = 0; i < NOTES_N; i ++){
 
-    if (output_envelope < 0) {
-        output_envelope = 0;
+        //if (notes[i]->active == 0){ continue;} // Skip if not not active
+        if (notes[i]->tick >= resolution) { notes[i]->tick = 0;} // Modulus tick by resolution
+        if (notes[i]->lfo_tick>= resolution) { notes[i]->lfo_tick = 0;} // modulus lfo tick by resolution
+
+        
+        double wave_val = wave[(int) floor(notes[i]->tick)] * notes[i]->active;
+        double lfo_on_wave_val = wave_val - wave_val * lfo_wave[(int) floor(notes[i]->lfo_tick)] * output_lfo_mix;
+
+        if(output_lfo_on){
+            wave_val = lfo_on_wave_val;         
+        } else {
+            wave_val = wave_val;
+        }
+
+        
+        //notes[i]->value = wave_val; 
+
+        if (notes[i]->envelope < 0) {
+            notes[i]->envelope = 0;
+        }
+        
+        if(notes[i]->delay_tick < output_delay){
+            notes[i]->delay_tick++;
+            continue;
+        }
+
+        // ADSR
+        double env = notes[i]->envelope;
+
+        if (notes[i]->released == 0){
+            if (notes[i]->ADSR_stage == 0){ // Attack Stage
+                env += output_attack_inc;
+            } else if (notes[i]->ADSR_stage == 1){ // Delay Stage
+                env += output_decay_dec;
+            } else { // Sustain
+                env = output_sustain_level;
+            }
+            
+            // Recheck Stages
+            if (notes[i]->envelope > 1) { 
+                notes[i]->ADSR_stage = 1; 
+                env = 1;
+            }
+            
+            if ( notes[i]->ADSR_stage == 1 && env < output_sustain_level ) {
+                notes[i]->ADSR_stage = 2;
+            }
+            
+        } else if (env > 0) { // Release
+            if (env > output_sustain_level) {
+                env = output_sustain_level;
+            }
+            env += output_release_dec;
+        } else {
+            notes[i]->active = 0; // Endes the note once it is released and finished
+        }
+
+        notes[i]->tick += notes[i]->inc;
+        notes[i]->lfo_tick += lfo_inc;
+
+        if(!output_envelope_on){
+            env = 1;
+        }
+
+        notes[i]->envelope = env;
+        notes[i]->value = wave_val;
+        output_value += env * wave_val;
     }
-
-    osc_mix = output_volume * output_envelope * (osc_1_value*osc_1_mix+ osc_2_value*osc_2_mix);
-    output_value = (int) floor((osc_mix + 1.0) * 300);
-
-    DAC_UpdateValue(LPC_DAC, output_value * note_mute);
-
-    // Attack
-    if (output_envelope < 1 && released == 0 && envelope_on) {
-        output_envelope += output_attack_inc;
-    }
-
-    // Release
-    if (output_envelope > 0 && released == 1 && envelope_on) {
-        output_envelope += output_release_inc;
-    }
-
-    osc_1_tick += osc_1_inc;
-    osc_2_tick += osc_2_inc;
+	
+    output_value = ((output_volume * output_value)+1) * 300; 
+	DAC_UpdateValue(LPC_DAC, output_value);
 }
+
 
 void init_dac(void) {
     PINSEL_CFG_Type PinCfg; 
@@ -110,23 +150,31 @@ void init_dac(void) {
     DAC_Init (LPC_DAC);
 }
 
-void note_on(double freq) {
-    released = 0;
-    osc_1_inc = 0.00974999 * freq; // Bit rate callibrated to middle C
-    osc_2_inc = osc_1_inc;
+int note_on(double freq) {
+        int id = get_free_note_id();
 
-    if (envelope_on) {
-        output_envelope = 0;
-    } else {
-        output_envelope = 1;
-    }
+		notes[id]->released = 0;
+		notes[id]->active = 1;
+        notes[id]->delay_tick = 0;
+        notes[id]->lfo_tick = 0;
+		notes[id]->tick = 0;
+		notes[id]->inc = (double) RATE * freq;
+		notes[id]->value = 0;
+		
+		if(output_envelope_on){
+			notes[id]->envelope = 0;
+			notes[id]->ADSR_stage = 0;
+		}
+
+        return id;
 }
 
-void note_off(void) {
-    if (envelope_on) {
-        released = 1;
+void note_off() {
+    int id = 0;
+    if (output_envelope_on) {
+        notes[id]->released = 1;
     } else {
-        output_envelope = 0;
+        notes[id]->envelope = 0;
     }
 }
 
@@ -137,16 +185,18 @@ double get_freq(int key_n) {
 }
 
 void set_voice(struct Voice voice) {
-    osc_1_mix = voice.osc_1_mix;
-    osc_2_mix = voice.osc_2_mix;
-    osc_1_buf = voice.osc_1_buf;
-    osc_2_buf = voice.osc_2_buf;
-    envelope_on = voice.envelope_on;
-    output_attack_inc = 0.001 * voice.output_attack;
-    output_release_inc = -0.001 * voice.output_release;
-    mix_inc = 0;
-}
+    wave = voice.osc_1_buf;
 
-void set_resolution(int new_resolution) {
-    resolution = new_resolution;
+    output_envelope_on = voice.envelope_on;
+    output_delay = voice.delay;
+    output_lfo_on = voice.lfo_on;
+    output_lfo_mix = voice.lfo_mix;
+    lfo_wave = voice.lfo_buf;
+    lfo_inc = RATE * voice.lfo_freq;
+
+	//Setup ADSR
+	output_sustain_level = voice.sustain_level;
+    output_attack_inc =  + (float) 1/voice.attack_len ;
+	output_decay_dec =  - (float) (1-voice.sustain_level)/voice.decay_len ;
+    output_release_dec = - (float) (voice.sustain_level)/voice.release_len;
 }

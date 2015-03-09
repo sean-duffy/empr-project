@@ -1,74 +1,80 @@
 #include "instruments.h"
 
-// voice initialisers go here ...
-
-void init_voice_template(double wave_buf_1[], double wave_buf_2[]){
-	
-    //Apply effects
-    generate_triangle(wave_buf_1, RESOLUTION);
-    generate_sine(wave_buf_2, RESOLUTION);
-	
-	// Oscillator properties
-    voice_template.osc_1_buf = wave_buf_1;
-    voice_template.osc_1_mix = 0.5;
-    voice_template.osc_2_buf = wave_buf_2;
-    voice_template.osc_2_mix = 0.5;
-    voice_template.osc_2_detune = 0;
-    voice_template.output_attack = 1;
-    voice_template.output_release = 0.8;
-    voice_template.envelope_on = 0;
+int len_in_ms(int s){
+    return s * ADSR_RATE;
 }
-
 
 void init_voice_1(double wave_buf_1[], double wave_buf_2[]){
 
     //Apply effects
-    generate_square(wave_buf_1, RESOLUTION);
+    generate_sine(wave_buf_1, RESOLUTION);
     generate_sine(wave_buf_2, RESOLUTION);
 	
 	// Oscillator properties
     voice_1.osc_1_buf = wave_buf_1;
-    voice_1.osc_1_mix = 0.5;
-    voice_1.osc_2_buf = wave_buf_2;
-    voice_1.osc_2_mix = 0.5;
-    voice_1.osc_2_detune = 0;
-    voice_1.output_attack = 1;
-    voice_1.output_release = 0.8;
-    voice_1.envelope_on = 0;
+	
+    voice_1.attack_len = len_in_ms(1);
+	voice_1.decay_len = len_in_ms(1);
+	voice_1.sustain_level = 1;
+    voice_1.release_len = len_in_ms(1);
+    
+    voice_1.delay = len_in_ms(1);
+
+    voice_1.envelope_on = 1;
+    
+    voice_1.lfo_on = 1;
+    voice_1.lfo_buf = wave_buf_2;
+    voice_1.lfo_freq = 3; //Hz
+    voice_1.lfo_mix = 0.3;
 }
 
 void init_voice_2(double wave_buf_1[], double wave_buf_2[]){
 
     //Apply effects
-    generate_square(wave_buf_1, RESOLUTION);
-    generate_triangle(wave_buf_2, RESOLUTION);
+    generate_triangle(wave_buf_1, RESOLUTION);
+    generate_sine(wave_buf_2, RESOLUTION);
 	
 	// Oscillator properties
     voice_2.osc_1_buf = wave_buf_1;
-    voice_2.osc_1_mix = 0.5;
-    voice_2.osc_2_buf = wave_buf_2;
-    voice_2.osc_2_mix = 0.5;
-    voice_2.osc_2_detune = 0;
-    voice_2.output_attack = 1;
-    voice_2.output_release = 0.8;
-    voice_2.envelope_on = 0;
+	
+    voice_2.attack_len = len_in_ms(5);
+	voice_2.decay_len = len_in_ms(60);
+	voice_2.sustain_level = 0;
+    voice_2.release_len = len_in_ms(1);
+    
+    voice_2.delay = len_in_ms(0);
+
+    voice_2.envelope_on = 1;
+    voice_2.lfo_on = 1;
+
+    voice_2.lfo_buf = wave_buf_2;
+    voice_2.lfo_freq = 2; //Hz
+    voice_2.lfo_mix = 0;
 }
+
 
 void init_voice_3(double wave_buf_1[], double wave_buf_2[]){
 
     //Apply effects
-    generate_sawtooth(wave_buf_1, RESOLUTION);
+    generate_triangle(wave_buf_1, RESOLUTION);
     generate_noise(wave_buf_2, RESOLUTION);
 	
 	// Oscillator properties
     voice_3.osc_1_buf = wave_buf_1;
-    voice_3.osc_1_mix = 0.5;
-    voice_3.osc_2_buf = wave_buf_2;
-    voice_3.osc_2_mix = 0.5;
-    voice_3.osc_2_detune = 0;
-    voice_3.output_attack = 1;
-    voice_3.output_release = 0.8;
-    voice_3.envelope_on = 0;
+	
+    voice_3.attack_len = len_in_ms(1);
+	voice_3.decay_len = len_in_ms(300);
+	voice_3.sustain_level = 0;
+    voice_3.release_len = len_in_ms(1);
+    
+    voice_3.delay = len_in_ms(1);
+
+    voice_3.envelope_on = 1;
+    voice_3.lfo_on = 1;
+
+    voice_3.lfo_buf = wave_buf_2;
+    voice_3.lfo_freq = 2; //Hz
+    voice_3.lfo_mix = 0.5;
 }
 
 void init_voice_4(double wave_buf_1[], double wave_buf_2[]){
@@ -79,47 +85,20 @@ void init_voice_4(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_4.osc_1_buf = wave_buf_1;
-    voice_4.osc_1_mix = 0.5;
-    voice_4.osc_2_buf = wave_buf_2;
-    voice_4.osc_2_mix = 0.5;
-    voice_4.osc_2_detune = 0;
-    voice_4.output_attack = 1;
-    voice_4.output_release = 0.8;
-    voice_4.envelope_on = 0;
-}
-
-void init_voice_5(double wave_buf_1[], double wave_buf_2[]){
-
-    //Apply effects
-    generate_sawtooth(wave_buf_1, RESOLUTION);
-    generate_square(wave_buf_2, RESOLUTION);
 	
-	// Oscillator properties
-    voice_5.osc_1_buf = wave_buf_1;
-    voice_5.osc_1_mix = 0.5;
-    voice_5.osc_2_buf = wave_buf_2;
-    voice_5.osc_2_mix = 0.5;
-    voice_5.osc_2_detune = 0;
-    voice_5.output_attack = 1;
-    voice_5.output_release = 0.8;
-    voice_5.envelope_on = 0;
-}
+    voice_4.attack_len = len_in_ms(500);
+	voice_4.decay_len = len_in_ms(2);
+	voice_4.sustain_level = 0.5;
+    voice_4.release_len = len_in_ms(200);
+    
+    voice_4.delay = len_in_ms(200);
 
-void init_voice_6(double wave_buf_1[], double wave_buf_2[]){
+    voice_4.envelope_on = 1;
+    voice_4.lfo_on = 1;
 
-    //Apply effects
-    generate_square(wave_buf_1, RESOLUTION);
-    generate_sine(wave_buf_2);
-	
-	// Oscillator properties
-    voice_6.osc_1_buf = wave_buf_1;
-    voice_6.osc_1_mix = 0.8;
-    voice_6.osc_2_buf = wave_buf_2;
-    voice_6.osc_2_mix = 0.2;
-    voice_6.osc_2_detune = 0;
-    voice_6.output_attack = 0.8;
-    voice_6.output_release = 0.8;
-    voice_6.envelope_on = 1;
+    voice_4.lfo_buf = wave_buf_2;
+    voice_4.lfo_freq = 10; //Hz
+    voice_4.lfo_mix = 0.5;
 }
 
 
@@ -145,17 +124,6 @@ void set_voice_by_id(int voice_id, double wave_buf_1[], double wave_buf_2[]){
             init_voice_4(wave_buf_1, wave_buf_2);
             set_voice(voice_4);
             break;
-        case 5:
-            init_voice_5(wave_buf_1, wave_buf_2);
-            set_voice(voice_5);
-            break;
-        case 6:
-            init_voice_6(wave_buf_1, wave_buf_2);
-            set_voice(voice_6);
-            break;
-        default: 
-            init_voice_template(wave_buf_1, wave_buf_2);
-            set_voice(voice_template);
     }
 }
 

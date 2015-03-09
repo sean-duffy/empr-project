@@ -26,7 +26,7 @@ struct CAN_return_data message;
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
 uint8_t channel_playing = 1;
-int voice_playing = 6;
+int voice_playing = 1;
 char status_string[16];
 char space_string[] = "                ";
 char *first_line;
@@ -85,7 +85,7 @@ extern void EINT3_IRQHandler() {
         channel_playing -= 1;
     }
 
-    if (readChar == '8' && voice_playing < 6) {
+    if (readChar == '8' && voice_playing < 4) {
         voice_playing += 1;
         set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
     } else if (readChar == '0' && voice_playing > 1) {
@@ -99,19 +99,15 @@ extern void EINT3_IRQHandler() {
 
 void main() {
     serial_init();
-    set_resolution(RESOLUTION);
    
     debug_print("set_voice_id", strlen("set_voice_id"));
 
     set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
 
 	i2cInit(LPC_I2C1, 100000);
-    serial_init();
 
     init_dac();
     init_can(250000, 0);
-
-    SysTick_Config(2400);
 
     I2CConfigStruct.retransmissions_max = 3;
     I2CConfigStruct.sl_addr7bit = 59;
@@ -127,7 +123,18 @@ void main() {
     sprintf(status_string, "Ch:%2d  Vo: %d  #%f", channel_playing, voice_playing, output_volume * 10.0);
     write_second_line(&I2CConfigStruct, status_string, strlen(status_string));
 
+    SysTick_Config(2400);
+
     keypadInit(LPC_I2C1, keypadAddr);
+
+    /*
+    int xx;
+    while(1){
+        note_on(get_freq(60));
+        for(xx = 0; xx < 500; xx++){}
+        note_off();
+        for(xx = 0; xx < 10000; xx++){}
+    }*/
 
     while (1);
 }

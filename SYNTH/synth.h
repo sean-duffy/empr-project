@@ -12,18 +12,50 @@
 #ifndef VOICE_STRUCT_GUARD
 #define VOICE_STRUCT_GUARD
 
-#define RESOLUTION 360 
+#define RESOLUTION 360
+#define RATE 0.01025953633
+#define LFO_RATE 0.0005
+#define ADSR_RATE 40
+
+#define NOTES_N 1
 
 struct Voice {
     double *osc_1_buf;
     double osc_1_mix;
-    double output_attack;
-    double output_release;
-    int envelope_on;
 
-    double *osc_2_buf;
-    double osc_2_detune;
-    double osc_2_mix;
+    //Envelope
+    int envelope_on;
+    int attack_len;
+	int  decay_len;
+	double sustain_level;
+    int release_len;
+	
+    //Delay
+    int delay;
+
+    //LFO
+    int lfo_on;
+    double *lfo_buf;
+    double lfo_freq;
+    double lfo_mix;
+
+};
+
+#endif
+
+#ifndef guard
+#define guard
+struct Note {
+		int active;
+        int released;
+        
+        double delay_tick;
+	    double lfo_tick;	
+        double tick;
+		double inc;
+        double value;
+        double envelope;
+        int ADSR_stage;
 };
 
 #endif
@@ -33,7 +65,7 @@ int init_timer(void);
 void set_resolution(int new_resolution);
 void set_voice(struct Voice voice);
 double get_freq(int key_n);
-void note_on(double freq);
+int note_on(double freq);
 void note_off(void);
 
 int scroll_counter;

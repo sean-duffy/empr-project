@@ -1,5 +1,8 @@
 #include "synth.h"
 
+#ifndef INSTRUMENTS_STRUCT_GUARD
+#define INSTRUMENTS_STRUCT_GUARD
+
 //Instrument declarations
 struct Voice voice_template;
 struct Voice voice_1;
@@ -21,3 +24,4 @@ void init_voice_6();
 //...
 void set_voice_by_id(int voice_id, double wave_buf_1[], double wave_buf_2[]);
 
+#endif
