@@ -145,7 +145,7 @@ void init_voice_6(double wave_buf_1[], double wave_buf_2[]){
 	voice_6.sustain_level = 0.5;
     voice_6.release_len = len_in_ms(50);
     
-    voice_6.delay = len_in_ms(200);
+    voice_6.delay = len_in_ms(1);
 
     voice_6.envelope_on = 1;
     voice_6.lfo_on = 1;
