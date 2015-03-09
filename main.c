@@ -42,7 +42,12 @@ void CAN_IRQHandler(void) {
         CAN_ReceiveMsg(LPC_CAN2, &RXMsg);
         interpret_message(&RXMsg, 1, &message);
 
+
         if (message.done) {
+            char str[100];
+            int len;
+            len = sprintf(str, "%d,%d,%d\n", 0,0,0);
+            debug_print_nnl(str, len);
             first_line = (char *) calloc(strlen(message.text_data.track) - 12 + 16 + 3 + strlen(message.text_data.bpm), sizeof(char));
             strcpy(first_line, space_string);
             strncat(first_line, message.text_data.track, strlen(message.text_data.track) - 12);
@@ -53,6 +58,10 @@ void CAN_IRQHandler(void) {
         }
 
         if (message.is_midi) {
+            char str[100];
+            int len;
+            len = sprintf(str, "%2d,%d,%f\n", message.midi_data.channel, message.midi_data.note, message.midi_data.volume*10.0);
+            debug_print_nnl(str, len);
             if (message.midi_data.channel == channel_playing) {
                 if (message.midi_data.volume == 0) {
                     note_off();

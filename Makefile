@@ -54,6 +54,6 @@ clean:
 # install software to board, remember to sync the file systems
 install:
 	@echo "Copying " $(EXECNAME) "to the MBED file system"
-	cp $(EXECNAME).bin /media/$(USER)/MBED &
+	cp $(EXECNAME).bin /Volumes/MBED &
 	sync
 	@echo "Now press the reset button on all MBED file systems"
