@@ -52,7 +52,7 @@ pygame.display.set_caption("Fo real?!")
 
 done = False
 clock = pygame.time.Clock()
-assign_positions(48, 95)
+assign_positions(48, 50)
 while not done:
 	# This limits the while loop to a max of 10 times per second.
     # Leave this out and we will use all CPU we can.
@@ -70,27 +70,23 @@ while not done:
 			line[0] = int(line[0])
 			line[1] = int(line[1])
 			line[2] = int(float(line[2][:6]))
-			if (not (line[0] or line[1] or line[2])):
-				for i in range (0 ,48):
-					volumes[i] = 0
+			index = line[0]*line[1]%48
+			volumes[index] = line[2]/400.0
 		else:
 			line = [0, 0, 0]
+			
 	except serial.SerialException:
 		for i in range (0 ,48):
 			volumes[i] = 0
 		line = [0, 0, 0]
 	
-	
 	print line
- 	
-	index = line[0]*line[1]%48
-	volumes[index] = line[2]/1000.0
 	
 	for i in range (0, 48):
 		a = volumes[i]
 
 		pygame.draw.aaline(screen, colors[i], (positions[i][0], positions[i][1]), (positions[i][0] + (a*(positions[i][0] - (screen_width/2))), positions[i][1] + (a*(positions[i][1]-(screen_height/2)))), 1)
-		pygame.draw.circle(screen, GRAY, [screen_width/2, screen_height/2], 100, 0)
+		pygame.draw.circle(screen, GRAY, [screen_width/2, screen_height/2], 55, 0)
 
 	pygame.display.update()
 

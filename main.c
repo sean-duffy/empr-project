@@ -82,6 +82,7 @@ extern void EINT3_IRQHandler() {
     i2cWrite(LPC_I2C1, keypadAddr, data, 1);
     GPIO_ClearInt(0, 0x00800000);
 
+    debug_print("", 0);
     if (readChar == '9' && output_volume < 0.9) {
         output_volume += 0.1;
     } else if (readChar == '#' && output_volume > 0.1) {
