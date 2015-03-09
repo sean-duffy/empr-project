@@ -23,6 +23,8 @@ struct Voice {
     double *osc_1_buf;
     double osc_1_mix;
 
+    double rate;
+
     //Envelope
     int envelope_on;
     int attack_len;

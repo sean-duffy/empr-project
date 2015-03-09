@@ -12,6 +12,7 @@ void init_voice_1(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_1.osc_1_buf = wave_buf_1;
+    voice_1.rate = 0.01025953633;
 	
     voice_1.attack_len = len_in_ms(1);
 	voice_1.decay_len = len_in_ms(1);
@@ -36,7 +37,8 @@ void init_voice_2(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_2.osc_1_buf = wave_buf_1;
-	
+    voice_2.rate = 0.01025953633;
+
     voice_2.attack_len = len_in_ms(5);
 	voice_2.decay_len = len_in_ms(60);
 	voice_2.sustain_level = 0;
@@ -61,7 +63,8 @@ void init_voice_3(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_3.osc_1_buf = wave_buf_1;
-	
+    voice_3.rate = 0.01025953633;
+
     voice_3.attack_len = len_in_ms(1);
 	voice_3.decay_len = len_in_ms(150);
 	voice_3.sustain_level = 0;
@@ -85,6 +88,7 @@ void init_voice_4(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_4.osc_1_buf = wave_buf_1;
+    voice_4.rate = 0.01025953633;
 	
     voice_4.attack_len = len_in_ms(500);
 	voice_4.decay_len = len_in_ms(2);
@@ -110,6 +114,7 @@ void init_voice_5(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_5.osc_1_buf = wave_buf_1;
+    voice_5.rate = 0.01025953633;
 	
     voice_5.attack_len = len_in_ms(50);
 	voice_5.decay_len = len_in_ms(50);
@@ -133,6 +138,7 @@ void init_voice_6(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_6.osc_1_buf = wave_buf_1;
+    voice_6.rate = 0.9193426814;
 	
     voice_6.attack_len = len_in_ms(50);
 	voice_6.decay_len = len_in_ms(50);

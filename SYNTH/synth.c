@@ -22,6 +22,7 @@ double output_attack_inc = 0;
 double output_decay_dec = 0;
 double output_sustain_level = 0;
 double output_release_dec = 0;
+double rate = 0;
 
 double *wave;
 int scroll_counter = 0;
@@ -158,7 +159,7 @@ int note_on(double freq) {
         notes[id]->delay_tick = 0;
         notes[id]->lfo_tick = 0;
 		notes[id]->tick = 0;
-		notes[id]->inc = (double) RATE * freq;
+		notes[id]->inc = rate * freq;
 		notes[id]->value = 0;
 		
 		if(output_envelope_on){
@@ -186,13 +187,14 @@ double get_freq(int key_n) {
 
 void set_voice(struct Voice voice) {
     wave = voice.osc_1_buf;
+    rate = voice.rate;
 
     output_envelope_on = voice.envelope_on;
     output_delay = voice.delay;
     output_lfo_on = voice.lfo_on;
     output_lfo_mix = voice.lfo_mix;
     lfo_wave = voice.lfo_buf;
-    lfo_inc = RATE * voice.lfo_freq;
+    lfo_inc = rate * voice.lfo_freq;
 
 	//Setup ADSR
 	output_sustain_level = voice.sustain_level;
