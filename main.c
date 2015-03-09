@@ -87,7 +87,7 @@ extern void EINT3_IRQHandler() {
         channel_playing -= 1;
     }
 
-    if (readChar == '8' && voice_playing < 4) {
+    if (readChar == '8' && voice_playing < 6) {
         voice_playing += 1;
         set_voice_by_id(voice_playing, wave_buf_1, wave_buf_2);
     } else if (readChar == '0' && voice_playing > 1) {
@@ -137,6 +137,5 @@ void main() {
         note_off();
         for(xx = 0; xx < 10000; xx++){}
     }*/
-
     while (1);
 }
