@@ -172,6 +172,14 @@ void set_voice_by_id(int voice_id, double wave_buf_1[], double wave_buf_2[]){
             init_voice_4(wave_buf_1, wave_buf_2);
             set_voice(voice_4);
             break;
+        case 5:
+            init_voice_5(wave_buf_1, wave_buf_2);
+            set_voice(voice_5);
+            break;
+        case 6:
+            init_voice_6(wave_buf_1, wave_buf_2);
+            set_voice(voice_6);
+            break;
     }
 }
 

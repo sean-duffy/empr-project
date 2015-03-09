@@ -39,7 +39,7 @@ double point_rand(){
 void generate_noise(double *buf, int res) {
     int i;
     for (i = 0; i < res; i++) {
-        buf[i] = point_rand();
+        buf[i] = 1 - point_rand()*2;
     }
 }
 
