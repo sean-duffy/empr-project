@@ -46,9 +46,9 @@ def assign_positions(divisions, radius):
 
 ser = serial.Serial('/dev/cu.usbmodemfd122', 9600, timeout=1, parity=serial.PARITY_EVEN, rtscts=1)
 pygame.init()
-screen = pygame.display.set_mode([screen_width, screen_height], pygame.RESIZABLE)
+screen = pygame.display.set_mode([screen_width, screen_height], pygame.NOFRAME)
 
-pygame.display.set_caption("Fo real?!")
+pygame.display.set_caption("")
 
 done = False
 clock = pygame.time.Clock()
