@@ -12,7 +12,7 @@ void init_voice_1(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_1.osc_1_buf = wave_buf_1;
-    voice_1.rate = 0.01025953633;
+    voice_1.rate = 0.01040269265;
 	
     voice_1.attack_len = len_in_ms(1);
 	voice_1.decay_len = len_in_ms(1);
@@ -90,45 +90,45 @@ void init_voice_4(double wave_buf_1[], double wave_buf_2[]){
     voice_4.osc_1_buf = wave_buf_1;
     voice_4.rate = 0.01025953633;
 	
-    voice_4.attack_len = len_in_ms(500);
-	voice_4.decay_len = len_in_ms(2);
-	voice_4.sustain_level = 0.5;
-    voice_4.release_len = len_in_ms(200);
+    voice_4.attack_len = len_in_ms(50);
+	voice_4.decay_len = len_in_ms(1);
+	voice_4.sustain_level = 1;
+    voice_4.release_len = len_in_ms(50);
     
-    voice_4.delay = len_in_ms(200);
+    voice_4.delay = len_in_ms(0);
 
     voice_4.envelope_on = 1;
     voice_4.lfo_on = 1;
 
     voice_4.lfo_buf = wave_buf_2;
-    voice_4.lfo_freq = 10; //Hz
-    voice_4.lfo_mix = 0.5;
+    voice_4.lfo_freq = 5; //Hz
+    voice_4.lfo_mix = 0.3;
 }
 
 
 void init_voice_5(double wave_buf_1[], double wave_buf_2[]){
 
     //Apply effects
-    generate_noise(wave_buf_1, RESOLUTION);
-    generate_triangle(wave_buf_2, RESOLUTION);
+    generate_triangle(wave_buf_1, RESOLUTION);
+    generate_sawtooth(wave_buf_2, RESOLUTION);
 	
 	// Oscillator properties
     voice_5.osc_1_buf = wave_buf_1;
     voice_5.rate = 0.01025953633;
 	
-    voice_5.attack_len = len_in_ms(50);
-	voice_5.decay_len = len_in_ms(50);
-	voice_5.sustain_level = 0.5;
-    voice_5.release_len = len_in_ms(200);
+    voice_5.attack_len = len_in_ms(1);
+	voice_5.decay_len = len_in_ms(1);
+	voice_5.sustain_level = 1;
+    voice_5.release_len = len_in_ms(1);
     
-    voice_5.delay = len_in_ms(200);
+    voice_5.delay = len_in_ms(1);
 
     voice_5.envelope_on = 1;
     voice_5.lfo_on = 1;
 
     voice_5.lfo_buf = wave_buf_2;
     voice_5.lfo_freq = 5; //Hz
-    voice_5.lfo_mix = 0.8;
+    voice_5.lfo_mix = 0;
 }
 void init_voice_6(double wave_buf_1[], double wave_buf_2[]){
 
@@ -138,14 +138,14 @@ void init_voice_6(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_6.osc_1_buf = wave_buf_1;
-    voice_6.rate = 0.9193426814;
+    voice_6.rate = 0.01042988264;
 	
-    voice_6.attack_len = len_in_ms(50);
-	voice_6.decay_len = len_in_ms(50);
-	voice_6.sustain_level = 0.5;
-    voice_6.release_len = len_in_ms(50);
+    voice_6.attack_len = len_in_ms(1);
+	voice_6.decay_len = len_in_ms(1);
+	voice_6.sustain_level = 1;
+    voice_6.release_len = len_in_ms(1);
     
-    voice_6.delay = len_in_ms(1);
+    voice_6.delay = len_in_ms(100);
 
     voice_6.envelope_on = 1;
     voice_6.lfo_on = 1;
