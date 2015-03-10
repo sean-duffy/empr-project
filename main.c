@@ -19,12 +19,14 @@
 #include "LCD/lcd.h"
 #include "keypad/keypad.h"
 
-int debug = 1;
+int debug = 0;
+int demo = 0;
 CAN_MSG_Type RXMsg;
 struct CAN_return_data message;
 
 #define debug_print(n, x) if(debug) { write_serial(n, x); write_serial("\n\r", 2); }
 #define debug_print_nnl(n, x) if(debug) { write_serial(n, x); }
+
 uint8_t channel_playing = 1;
 int voice_playing = 1;
 char status_string[16];
@@ -55,9 +57,13 @@ void CAN_IRQHandler(void) {
         if (message.is_midi) {
             if (message.midi_data.channel == channel_playing) {
                 if (message.midi_data.volume == 0) {
-                    note_off();
+                    if(!demo){
+                        note_off();
+                    }
                 } else {
-                    note_on(get_freq(message.midi_data.note));
+                    if(!demo){
+                        note_on(get_freq(message.midi_data.note));
+                    }
                 }
             }
             message.is_midi = 0;
@@ -73,6 +79,9 @@ extern void EINT3_IRQHandler() {
     i2cWrite(LPC_I2C1, keypadAddr, data, 1);
     GPIO_ClearInt(0, 0x00800000);
 
+    if (readChar == '1')
+        demo = (demo + 1)%2;
+
     if (readChar == '9' && output_volume < 0.9) {
         output_volume += 0.1;
     } else if (readChar == '#' && output_volume > 0.1) {
@@ -80,7 +89,11 @@ extern void EINT3_IRQHandler() {
     }
 
     if (readChar == '7' && channel_playing < 15) {
-        note_off();
+        if(demo){
+            note_on(get_freq(60));
+        } else {
+            note_off();
+        }
         channel_playing += 1;
     } else if (readChar == '*' && channel_playing > 1) {
         note_off();

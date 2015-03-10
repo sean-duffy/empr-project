@@ -138,14 +138,14 @@ void init_voice_6(double wave_buf_1[], double wave_buf_2[]){
 	
 	// Oscillator properties
     voice_6.osc_1_buf = wave_buf_1;
-    voice_6.rate = 0.01042988264;
+    voice_6.rate = 0.01057541588;
 	
     voice_6.attack_len = len_in_ms(1);
 	voice_6.decay_len = len_in_ms(1);
 	voice_6.sustain_level = 1;
     voice_6.release_len = len_in_ms(1);
     
-    voice_6.delay = len_in_ms(100);
+    voice_6.delay = len_in_ms(400);
 
     voice_6.envelope_on = 1;
     voice_6.lfo_on = 1;
